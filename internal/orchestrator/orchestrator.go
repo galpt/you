@@ -174,7 +174,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "task": "allow",
         "webfetch": "allow",\n        "skill": "allow"
       },
-      "prompt": "{file:./.opencode/agents/ceo.md}"
+      "prompt": "{file:.opencode/agents/ceo.md}"
     },
     "product-manager": {
       "description": "Defines requirements, creates PRDs, and validates acceptance criteria",
@@ -192,7 +192,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "task": "allow",
         "webfetch": "allow",\n        "skill": "allow"
       },
-      "prompt": "{file:./.opencode/agents/product-manager.md}"
+      "prompt": "{file:.opencode/agents/product-manager.md}"
     },
     "product-designer": {
       "description": "Creates UI/UX designs, user flows, and design specifications",
@@ -210,7 +210,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "task": "allow",
         "webfetch": "allow",\n        "skill": "allow"
       },
-      "prompt": "{file:./.opencode/agents/product-designer.md}"
+      "prompt": "{file:.opencode/agents/product-designer.md}"
     },
     "solution-architect": {
       "description": "Designs system architecture, tech stack, and data models",
@@ -228,7 +228,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "task": "allow",
         "webfetch": "allow",\n        "skill": "allow"
       },
-      "prompt": "{file:./.opencode/agents/solution-architect.md}"
+      "prompt": "{file:.opencode/agents/solution-architect.md}"
     },
     "lead-engineer": {
       "description": "Breaks architecture into tasks, reviews code, manages releases",
@@ -247,7 +247,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "task": "allow",
         "webfetch": "allow",\n        "skill": "allow"
       },
-      "prompt": "{file:./.opencode/agents/lead-engineer.md}"
+      "prompt": "{file:.opencode/agents/lead-engineer.md}"
     },
     "software-engineer": {
       "description": "Implements features, writes tests, and submits code for review",
@@ -265,7 +265,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "bash": "allow",
         "webfetch": "allow",\n        "skill": "allow"
       },
-      "prompt": "{file:./.opencode/agents/software-engineer.md}"
+      "prompt": "{file:.opencode/agents/software-engineer.md}"
     },
     "qa-engineer": {
       "description": "Performs automated testing, validates requirements, reports bugs",
@@ -284,7 +284,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "task": "allow",
         "webfetch": "allow",\n        "skill": "allow"
       },
-      "prompt": "{file:./.opencode/agents/qa-engineer.md}"
+      "prompt": "{file:.opencode/agents/qa-engineer.md}"
     },
     "security-engineer": {
       "description": "Conducts security audits, identifies vulnerabilities, ensures secure coding practices",
@@ -302,7 +302,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "bash": "allow",
         "webfetch": "allow",\n        "skill": "allow"
       },
-      "prompt": "{file:./.opencode/agents/security-engineer.md}"
+      "prompt": "{file:.opencode/agents/security-engineer.md}"
     },
     "devops-sre": {
       "description": "Manages CI/CD pipelines, infrastructure, deployment, and observability",
@@ -321,7 +321,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "task": "allow",
         "webfetch": "allow",\n        "skill": "allow"
       },
-      "prompt": "{file:./.opencode/agents/devops-sre.md}"
+      "prompt": "{file:.opencode/agents/devops-sre.md}"
     },
     "technical-writer": {
       "description": "Creates documentation, API references, user guides, and changelogs",
@@ -338,7 +338,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "edit": "allow",
         "webfetch": "allow",\n        "skill": "allow"
       },
-      "prompt": "{file:./.opencode/agents/technical-writer.md}"
+      "prompt": "{file:.opencode/agents/technical-writer.md}"
     }
   }
 }
@@ -476,11 +476,11 @@ func (o *Orchestrator) launchOpenCodeWithCEO() error {
 	go func() {
 		scanner := bufio.NewScanner(stdoutPipe)
 		var recentOutput strings.Builder
-		
+
 		for scanner.Scan() {
 			line := scanner.Text()
 			fmt.Println(line) // Pass through to terminal
-			
+
 			// Accumulate recent output for context
 			recentOutput.WriteString(line + "\n")
 			if recentOutput.Len() > 2000 {
@@ -489,7 +489,7 @@ func (o *Orchestrator) launchOpenCodeWithCEO() error {
 				recentOutput.Reset()
 				recentOutput.WriteString(output[len(output)-2000:])
 			}
-			
+
 			// Detect questions or decision points
 			if o.isQuestionOrDecisionPoint(line) {
 				needsResponse <- recentOutput.String()
@@ -510,7 +510,7 @@ func (o *Orchestrator) launchOpenCodeWithCEO() error {
 		for context := range needsResponse {
 			response := o.generateAutoResponse(context)
 			logDecision(o.extractQuestion(context), response)
-			
+
 			// Send response to OpenCode
 			io.WriteString(stdinPipe, response+"\n")
 		}
@@ -524,7 +524,7 @@ func (o *Orchestrator) launchOpenCodeWithCEO() error {
 	// Wait for process to complete
 	err = <-done
 	close(needsResponse)
-	
+
 	if err != nil {
 		return fmt.Errorf("opencode process failed: %w", err)
 	}
@@ -537,7 +537,7 @@ func (o *Orchestrator) launchOpenCodeWithCEO() error {
 // isQuestionOrDecisionPoint detects if output contains a question or requires decision
 func (o *Orchestrator) isQuestionOrDecisionPoint(line string) bool {
 	line = strings.ToLower(line)
-	
+
 	// Pattern matching for questions and decision points
 	patterns := []string{
 		`\?$`,                           // Ends with question mark
@@ -550,81 +550,81 @@ func (o *Orchestrator) isQuestionOrDecisionPoint(line string) bool {
 		`clarify|clarification`,         // Clarification needs
 		`(option|choice) [a-z]`,         // Multiple choice
 	}
-	
+
 	for _, pattern := range patterns {
 		matched, _ := regexp.MatchString(pattern, line)
 		if matched {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
 // extractQuestion extracts the actual question from context
 func (o *Orchestrator) extractQuestion(context string) string {
 	lines := strings.Split(context, "\n")
-	
+
 	// Find the last line with a question mark or decision keyword
 	for i := len(lines) - 1; i >= 0 && i >= len(lines)-10; i-- {
 		line := strings.TrimSpace(lines[i])
-		if strings.Contains(line, "?") || 
-		   strings.Contains(strings.ToLower(line), "which") ||
-		   strings.Contains(strings.ToLower(line), "should") {
+		if strings.Contains(line, "?") ||
+			strings.Contains(strings.ToLower(line), "which") ||
+			strings.Contains(strings.ToLower(line), "should") {
 			return line
 		}
 	}
-	
+
 	// Return last non-empty line
 	for i := len(lines) - 1; i >= 0; i-- {
 		if line := strings.TrimSpace(lines[i]); line != "" {
 			return line
 		}
 	}
-	
+
 	return "Decision point"
 }
 
 // generateAutoResponse creates intelligent CEO-level responses
 func (o *Orchestrator) generateAutoResponse(context string) string {
 	contextLower := strings.ToLower(context)
-	
+
 	// Priority/sequencing questions
-	if strings.Contains(contextLower, "which one") && 
-	   (strings.Contains(contextLower, "first") || strings.Contains(contextLower, "start")) {
+	if strings.Contains(contextLower, "which one") &&
+		(strings.Contains(contextLower, "first") || strings.Contains(contextLower, "start")) {
 		return "Start with the most foundational and critical component that other parts depend on. Follow the natural dependency order."
 	}
-	
+
 	// Technical choice questions
 	if strings.Contains(contextLower, "should i use") || strings.Contains(contextLower, "which technology") {
 		return "Use the technology that best matches our requirements, has strong community support, and aligns with modern best practices. Research if needed using webfetch."
 	}
-	
+
 	// Architecture decisions
 	if strings.Contains(contextLower, "architecture") || strings.Contains(contextLower, "design pattern") {
 		return "Follow SOLID principles, keep it simple and maintainable. Prefer proven patterns over experimental approaches."
 	}
-	
+
 	// Testing questions
 	if strings.Contains(contextLower, "test") && strings.Contains(contextLower, "should") {
 		return "Yes, implement comprehensive tests. Prioritize: unit tests for business logic, integration tests for critical paths, and E2E for user workflows."
 	}
-	
+
 	// Documentation questions
 	if strings.Contains(contextLower, "document") && strings.Contains(contextLower, "should") {
 		return "Yes, document all public APIs, architecture decisions, and setup instructions. Keep documentation close to the code."
 	}
-	
+
 	// Security questions
 	if strings.Contains(contextLower, "security") || strings.Contains(contextLower, "encrypt") {
 		return "Always prioritize security. Use industry-standard practices, never roll your own crypto, and follow the principle of least privilege."
 	}
-	
+
 	// Performance questions
 	if strings.Contains(contextLower, "optim") || strings.Contains(contextLower, "performance") {
 		return "Optimize for readability first, then measure before optimizing for performance. Focus on algorithmic improvements over micro-optimizations."
 	}
-	
+
 	// Multiple options (A/B/C)
 	if regexp.MustCompile(`option [a-c]|choice [a-c]`).MatchString(contextLower) {
 		// Extract options and choose the most comprehensive one
@@ -633,22 +633,22 @@ func (o *Orchestrator) generateAutoResponse(context string) string {
 		}
 		return "Option A - proceed with the first viable approach and iterate if needed."
 	}
-	
+
 	// Confirmation requests
 	if strings.Contains(contextLower, "confirm") || strings.Contains(contextLower, "proceed") {
 		return "Yes, proceed. Make progress and we can iterate based on results."
 	}
-	
+
 	// Clarification requests
 	if strings.Contains(contextLower, "clarify") || strings.Contains(contextLower, "unclear") {
 		return "Make a reasonable assumption based on best practices and industry standards. Document your assumption and proceed."
 	}
-	
+
 	// Error handling questions
 	if strings.Contains(contextLower, "error") && strings.Contains(contextLower, "handle") {
 		return "Implement graceful error handling with clear error messages. Log errors appropriately and fail fast for unrecoverable errors."
 	}
-	
+
 	// Default intelligent response
 	return "Use your professional judgment and industry best practices. Make the decision that delivers the most value while maintaining code quality and maintainability."
 }
