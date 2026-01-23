@@ -111,7 +111,7 @@ Each agent is defined as a markdown file with YAML frontmatter:
 ---
 description: "Agent purpose"
 mode: subagent
-model: github-models/gpt-5-mini
+model: github-copilot/gpt-5-mini
 temperature: 0.2
 tools:
   write: true

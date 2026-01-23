@@ -167,7 +167,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
     "ceo": {
       "description": "Orchestrates the entire workflow, delegates to PM and reviews final output",
       "mode": "subagent",
-      "model": "github-models/gpt-5-mini",
+      "model": "github-copilot/gpt-5-mini",
       "temperature": 0.2,
       "tools": {
         "write": false,
@@ -186,7 +186,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
     "product-manager": {
       "description": "Defines requirements, creates PRDs, and validates acceptance criteria",
       "mode": "subagent",
-      "model": "github-models/gpt-5-mini",
+      "model": "github-copilot/gpt-5-mini",
       "temperature": 0.3,
       "tools": {
         "write": true,
@@ -206,7 +206,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
     "product-designer": {
       "description": "Creates UI/UX designs, user flows, and design specifications",
       "mode": "subagent",
-      "model": "github-models/gpt-5-mini",
+      "model": "github-copilot/gpt-5-mini",
       "temperature": 0.4,
       "tools": {
         "write": true,
@@ -226,7 +226,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
     "solution-architect": {
       "description": "Designs system architecture, tech stack, and data models",
       "mode": "subagent",
-      "model": "github-models/gpt-5-mini",
+      "model": "github-copilot/gpt-5-mini",
       "temperature": 0.2,
       "tools": {
         "write": true,
@@ -246,7 +246,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
     "lead-engineer": {
       "description": "Breaks architecture into tasks, reviews code, manages releases",
       "mode": "subagent",
-      "model": "github-models/gpt-5-mini",
+      "model": "github-copilot/gpt-5-mini",
       "temperature": 0.2,
       "tools": {
         "write": true,
@@ -267,7 +267,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
     "software-engineer": {
       "description": "Implements features, writes tests, and submits code for review",
       "mode": "subagent",
-      "model": "github-models/gpt-5-mini",
+      "model": "github-copilot/gpt-5-mini",
       "temperature": 0.3,
       "tools": {
         "write": true,
@@ -287,7 +287,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
     "qa-engineer": {
       "description": "Performs automated testing, validates requirements, reports bugs",
       "mode": "subagent",
-      "model": "github-models/gpt-5-mini",
+      "model": "github-copilot/gpt-5-mini",
       "temperature": 0.1,
       "tools": {
         "write": true,
@@ -308,7 +308,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
     "security-engineer": {
       "description": "Conducts security audits, identifies vulnerabilities, ensures secure coding practices",
       "mode": "subagent",
-      "model": "github-models/gpt-5-mini",
+      "model": "github-copilot/gpt-5-mini",
       "temperature": 0.1,
       "tools": {
         "write": true,
@@ -328,7 +328,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
     "devops-sre": {
       "description": "Manages CI/CD pipelines, infrastructure, deployment, and observability",
       "mode": "subagent",
-      "model": "github-models/gpt-5-mini",
+      "model": "github-copilot/gpt-5-mini",
       "temperature": 0.2,
       "tools": {
         "write": true,
@@ -349,7 +349,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
     "technical-writer": {
       "description": "Creates documentation, API references, user guides, and changelogs",
       "mode": "subagent",
-      "model": "github-models/gpt-5-mini",
+      "model": "github-copilot/gpt-5-mini",
       "temperature": 0.3,
       "tools": {
         "write": true,

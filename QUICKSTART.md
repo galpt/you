@@ -9,7 +9,7 @@ Get started with You orchestrator in 5 minutes.
    ```bash
    # In OpenCode, run:
    /connect
-   # For GitHub Copilot: Select 'github-models' (unlimited GPT-5 Mini with Copilot Pro)
+   # For GitHub Copilot: Select 'github-copilot' (unlimited GPT-5 Mini with Copilot Pro)
    # Or select 'anthropic', 'openai', etc.
    ```
 

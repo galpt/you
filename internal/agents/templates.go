@@ -40,7 +40,7 @@ func getCEOAgentTemplate() AgentTemplate {
 		Role:        models.AgentRoleCEO,
 		Description: "Orchestrates the entire workflow, delegates to PM and reviews final output",
 		Mode:        "subagent",
-		Model:       "github-models/gpt-5-mini",
+		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.2,
 		Tools: map[string]bool{
 			"write":     false,
@@ -62,7 +62,7 @@ func getPMAgentTemplate() AgentTemplate {
 		Role:        models.AgentRolePM,
 		Description: "Defines requirements, creates PRDs, and validates acceptance criteria",
 		Mode:        "subagent",
-		Model:       "github-models/gpt-5-mini",
+		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.3,
 		Tools: map[string]bool{
 			"write":     true,
@@ -84,7 +84,7 @@ func getDesignerAgentTemplate() AgentTemplate {
 		Role:        models.AgentRoleDesigner,
 		Description: "Creates UI/UX designs, user flows, and design specifications",
 		Mode:        "subagent",
-		Model:       "github-models/gpt-5-mini",
+		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.4,
 		Tools: map[string]bool{
 			"write":     true,
@@ -106,7 +106,7 @@ func getArchitectAgentTemplate() AgentTemplate {
 		Role:        models.AgentRoleArchitect,
 		Description: "Designs system architecture, tech stack, and data models",
 		Mode:        "subagent",
-		Model:       "github-models/gpt-5-mini",
+		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.2,
 		Tools: map[string]bool{
 			"write":     true,
@@ -128,7 +128,7 @@ func getLeadEngineerAgentTemplate() AgentTemplate {
 		Role:        models.AgentRoleLeadEngineer,
 		Description: "Breaks architecture into tasks, reviews code, manages releases",
 		Mode:        "subagent",
-		Model:       "github-models/gpt-5-mini",
+		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.2,
 		Tools: map[string]bool{
 			"write":     true,
@@ -151,7 +151,7 @@ func getSWEAgentTemplate() AgentTemplate {
 		Role:        models.AgentRoleSWE,
 		Description: "Implements features, writes tests, and submits code for review",
 		Mode:        "subagent",
-		Model:       "github-models/gpt-5-mini",
+		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.3,
 		Tools: map[string]bool{
 			"write":     true,
@@ -174,7 +174,7 @@ func getQAAgentTemplate() AgentTemplate {
 		Role:        models.AgentRoleQA,
 		Description: "Performs automated testing, validates requirements, reports bugs",
 		Mode:        "subagent",
-		Model:       "github-models/gpt-5-mini",
+		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.1,
 		Tools: map[string]bool{
 			"write":     true,
@@ -197,7 +197,7 @@ func getSecurityAgentTemplate() AgentTemplate {
 		Role:        models.AgentRoleSecurity,
 		Description: "Conducts security audits, identifies vulnerabilities, ensures secure coding practices",
 		Mode:        "subagent",
-		Model:       "github-models/gpt-5-mini",
+		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.1,
 		Tools: map[string]bool{
 			"write":     true,
@@ -220,7 +220,7 @@ func getDevOpsAgentTemplate() AgentTemplate {
 		Role:        models.AgentRoleDevOps,
 		Description: "Manages CI/CD pipelines, infrastructure, deployment, and observability",
 		Mode:        "subagent",
-		Model:       "github-models/gpt-5-mini",
+		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.2,
 		Tools: map[string]bool{
 			"write":     true,
@@ -243,7 +243,7 @@ func getTechnicalWriterAgentTemplate() AgentTemplate {
 		Role:        models.AgentRoleTechnicalWriter,
 		Description: "Creates documentation, API references, user guides, and changelogs",
 		Mode:        "subagent",
-		Model:       "github-models/gpt-5-mini",
+		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.3,
 		Tools: map[string]bool{
 			"write":     true,
