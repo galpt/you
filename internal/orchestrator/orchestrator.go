@@ -1,9 +1,15 @@
 package orchestrator
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"regexp"
+	"strings"
+	"time"
 	"you/internal/agents"
 	"you/internal/models"
 	"you/internal/state"
@@ -394,18 +400,256 @@ func (o *Orchestrator) Orchestrate() error {
 	}
 
 	fmt.Println("\n✅ Orchestration setup complete!")
-	fmt.Println("\n📋 Next steps:")
-	fmt.Println("1. Open OpenCode in this directory: opencode")
-	fmt.Println("2. Use the @ceo agent to start the workflow")
-	fmt.Println("3. Tell @ceo: 'Read USER_INPUT.md and orchestrate the team to build this project'")
-	fmt.Println("\nThe CEO agent will then:")
-	fmt.Println("  → Delegate to @product-manager to create a PRD")
-	fmt.Println("  → @product-manager will delegate to @product-designer")
-	fmt.Println("  → @product-designer will delegate to @solution-architect")
-	fmt.Println("  → And so on through the complete workflow")
-	fmt.Println("\n💡 Tip: All artifacts and state are tracked in the .you/ directory")
+	fmt.Println("\n� Launching OpenCode with CEO agent...")
+
+	// 5. Automatically launch OpenCode with CEO agent
+	if err := o.launchOpenCodeWithCEO(); err != nil {
+		fmt.Printf("\n⚠️  Could not automatically launch OpenCode: %v\n", err)
+		fmt.Println("\n📋 Manual steps:")
+		fmt.Println("1. Run: opencode")
+		fmt.Println("2. Tell @ceo: 'Read USER_INPUT.md and orchestrate the team to build this project'")
+		return nil
+	}
 
 	return nil
+}
+
+// launchOpenCodeWithCEO launches OpenCode with the CEO agent and intelligent auto-response
+func (o *Orchestrator) launchOpenCodeWithCEO() error {
+	// Prepare the prompt for the CEO agent
+	prompt := "Read USER_INPUT.md and orchestrate the team to build this project. " +
+		"Follow the workflow phases defined in ORCHESTRATION_GUIDE.md. " +
+		"Start by delegating to @product-manager to create a comprehensive PRD."
+
+	// Create decision log file
+	decisionLog := filepath.Join(o.projectPath, ".you", "decisions.log")
+	logFile, err := os.OpenFile(decisionLog, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to create decision log: %w", err)
+	}
+	defer logFile.Close()
+
+	logDecision := func(question, response string) {
+		timestamp := time.Now().Format("2006-01-02 15:04:05")
+		entry := fmt.Sprintf("[%s]\nQ: %s\nA: %s\n\n", timestamp, question, response)
+		logFile.WriteString(entry)
+		fmt.Printf("\n🤖 Auto-Response: %s\n", response)
+	}
+
+	// Use exec.Command to run OpenCode
+	cmd := exec.Command("opencode", "run",
+		"--agent", "ceo",
+		"--prompt", prompt,
+		"--dir", o.projectPath,
+	)
+
+	// Set working directory
+	cmd.Dir = o.projectPath
+
+	// Create pipes for stdin/stdout to intercept and auto-respond
+	stdinPipe, err := cmd.StdinPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create stdin pipe: %w", err)
+	}
+
+	stdoutPipe, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create stdout pipe: %w", err)
+	}
+
+	stderrPipe, err := cmd.StderrPipe()
+	if err != nil {
+		return fmt.Errorf("failed to create stderr pipe: %w", err)
+	}
+
+	// Start OpenCode process
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("failed to start opencode: %w", err)
+	}
+
+	// Create channels for output handling
+	done := make(chan error)
+	needsResponse := make(chan string, 10)
+
+	// Monitor stdout for questions and auto-respond
+	go func() {
+		scanner := bufio.NewScanner(stdoutPipe)
+		var recentOutput strings.Builder
+		
+		for scanner.Scan() {
+			line := scanner.Text()
+			fmt.Println(line) // Pass through to terminal
+			
+			// Accumulate recent output for context
+			recentOutput.WriteString(line + "\n")
+			if recentOutput.Len() > 2000 {
+				// Keep only last ~2000 chars
+				output := recentOutput.String()
+				recentOutput.Reset()
+				recentOutput.WriteString(output[len(output)-2000:])
+			}
+			
+			// Detect questions or decision points
+			if o.isQuestionOrDecisionPoint(line) {
+				needsResponse <- recentOutput.String()
+			}
+		}
+	}()
+
+	// Monitor stderr (pass through)
+	go func() {
+		scanner := bufio.NewScanner(stderrPipe)
+		for scanner.Scan() {
+			fmt.Fprintln(os.Stderr, scanner.Text())
+		}
+	}()
+
+	// Handle auto-responses
+	go func() {
+		for context := range needsResponse {
+			response := o.generateAutoResponse(context)
+			logDecision(o.extractQuestion(context), response)
+			
+			// Send response to OpenCode
+			io.WriteString(stdinPipe, response+"\n")
+		}
+	}()
+
+	// Wait for completion
+	go func() {
+		done <- cmd.Wait()
+	}()
+
+	// Wait for process to complete
+	err = <-done
+	close(needsResponse)
+	
+	if err != nil {
+		return fmt.Errorf("opencode process failed: %w", err)
+	}
+
+	fmt.Println("\n✅ OpenCode session completed!")
+	fmt.Printf("📊 Decision log: %s\n", decisionLog)
+	return nil
+}
+
+// isQuestionOrDecisionPoint detects if output contains a question or requires decision
+func (o *Orchestrator) isQuestionOrDecisionPoint(line string) bool {
+	line = strings.ToLower(line)
+	
+	// Pattern matching for questions and decision points
+	patterns := []string{
+		`\?$`,                           // Ends with question mark
+		`which one`,                     // Choice questions
+		`should i`,                      // Permission questions
+		`do you want`,                   // Preference questions
+		`would you like`,                // Polite questions
+		`please (choose|select|decide)`, // Decision requests
+		`confirm`,                       // Confirmation requests
+		`clarify|clarification`,         // Clarification needs
+		`(option|choice) [a-z]`,         // Multiple choice
+	}
+	
+	for _, pattern := range patterns {
+		matched, _ := regexp.MatchString(pattern, line)
+		if matched {
+			return true
+		}
+	}
+	
+	return false
+}
+
+// extractQuestion extracts the actual question from context
+func (o *Orchestrator) extractQuestion(context string) string {
+	lines := strings.Split(context, "\n")
+	
+	// Find the last line with a question mark or decision keyword
+	for i := len(lines) - 1; i >= 0 && i >= len(lines)-10; i-- {
+		line := strings.TrimSpace(lines[i])
+		if strings.Contains(line, "?") || 
+		   strings.Contains(strings.ToLower(line), "which") ||
+		   strings.Contains(strings.ToLower(line), "should") {
+			return line
+		}
+	}
+	
+	// Return last non-empty line
+	for i := len(lines) - 1; i >= 0; i-- {
+		if line := strings.TrimSpace(lines[i]); line != "" {
+			return line
+		}
+	}
+	
+	return "Decision point"
+}
+
+// generateAutoResponse creates intelligent CEO-level responses
+func (o *Orchestrator) generateAutoResponse(context string) string {
+	contextLower := strings.ToLower(context)
+	
+	// Priority/sequencing questions
+	if strings.Contains(contextLower, "which one") && 
+	   (strings.Contains(contextLower, "first") || strings.Contains(contextLower, "start")) {
+		return "Start with the most foundational and critical component that other parts depend on. Follow the natural dependency order."
+	}
+	
+	// Technical choice questions
+	if strings.Contains(contextLower, "should i use") || strings.Contains(contextLower, "which technology") {
+		return "Use the technology that best matches our requirements, has strong community support, and aligns with modern best practices. Research if needed using webfetch."
+	}
+	
+	// Architecture decisions
+	if strings.Contains(contextLower, "architecture") || strings.Contains(contextLower, "design pattern") {
+		return "Follow SOLID principles, keep it simple and maintainable. Prefer proven patterns over experimental approaches."
+	}
+	
+	// Testing questions
+	if strings.Contains(contextLower, "test") && strings.Contains(contextLower, "should") {
+		return "Yes, implement comprehensive tests. Prioritize: unit tests for business logic, integration tests for critical paths, and E2E for user workflows."
+	}
+	
+	// Documentation questions
+	if strings.Contains(contextLower, "document") && strings.Contains(contextLower, "should") {
+		return "Yes, document all public APIs, architecture decisions, and setup instructions. Keep documentation close to the code."
+	}
+	
+	// Security questions
+	if strings.Contains(contextLower, "security") || strings.Contains(contextLower, "encrypt") {
+		return "Always prioritize security. Use industry-standard practices, never roll your own crypto, and follow the principle of least privilege."
+	}
+	
+	// Performance questions
+	if strings.Contains(contextLower, "optim") || strings.Contains(contextLower, "performance") {
+		return "Optimize for readability first, then measure before optimizing for performance. Focus on algorithmic improvements over micro-optimizations."
+	}
+	
+	// Multiple options (A/B/C)
+	if regexp.MustCompile(`option [a-c]|choice [a-c]`).MatchString(contextLower) {
+		// Extract options and choose the most comprehensive one
+		if strings.Contains(contextLower, "comprehensive") || strings.Contains(contextLower, "complete") {
+			return "Choose the most comprehensive option that delivers maximum value."
+		}
+		return "Option A - proceed with the first viable approach and iterate if needed."
+	}
+	
+	// Confirmation requests
+	if strings.Contains(contextLower, "confirm") || strings.Contains(contextLower, "proceed") {
+		return "Yes, proceed. Make progress and we can iterate based on results."
+	}
+	
+	// Clarification requests
+	if strings.Contains(contextLower, "clarify") || strings.Contains(contextLower, "unclear") {
+		return "Make a reasonable assumption based on best practices and industry standards. Document your assumption and proceed."
+	}
+	
+	// Error handling questions
+	if strings.Contains(contextLower, "error") && strings.Contains(contextLower, "handle") {
+		return "Implement graceful error handling with clear error messages. Log errors appropriately and fail fast for unrecoverable errors."
+	}
+	
+	// Default intelligent response
+	return "Use your professional judgment and industry best practices. Make the decision that delivers the most value while maintaining code quality and maintainability."
 }
 
 // readUserInput reads and returns the content of USER_INPUT.md

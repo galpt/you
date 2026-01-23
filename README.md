@@ -13,6 +13,7 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [How It Works](#how-it-works)
+- [Auto-Response System](#-intelligent-auto-response-system)
 - [Architecture](#architecture)
 - [Agent Roles](#agent-roles)
 - [Usage Examples](#usage-examples)
@@ -20,6 +21,12 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 - [Limitations & Roadmap](#limitations--roadmap)
 - [Contributing](#contributing)
 - [License](#license)
+
+**📚 Additional Documentation:**
+- [AUTO-RESPONSE.md](AUTO-RESPONSE.md) - Detailed auto-response system documentation
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture and data flow
+- [QUICKSTART.md](QUICKSTART.md) - 5-minute getting started guide
+- [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
 
 ---
 
@@ -41,6 +48,9 @@ This is an early beta release. The orchestrator can:
 
 - **Single-Prompt Orchestration**: Describe your project once; agents handle the rest
 - **10 Specialized Agents**: CEO, Product Manager, Designer, Architect, Lead Engineer, SWE, QA, Security, DevOps, Technical Writer
+- **Fully Autonomous Operation**: Zero human intervention required - agents make intelligent decisions automatically
+- **Intelligent Auto-Response**: Automatically handles all agent questions and decision points using CEO-level logic
+- **Decision Audit Trail**: All automated decisions logged to `.you/decisions.log` for transparency
 - **Reusable Skills**: Agents can load standardized workflows via OpenCode skills (PRD creation, code review, security audits, etc.)
 - **Web Research Capabilities**: All agents can browse the internet to verify documentation and latest syntax before writing code
 - **Obsolescence Protocol**: Agents automatically research external libraries/APIs to prevent outdated implementations
@@ -138,34 +148,36 @@ you.exe --orchestrate
 you --orchestrate
 ```
 
+This will:
+- Create a Goal from your USER_INPUT.md
+- Initialize workflow state
+- Generate `ORCHESTRATION_GUIDE.md`
+- **Automatically launch OpenCode with the CEO agent**
+- **Auto-respond to all agent questions** using intelligent CEO logic
+- **Log all decisions** to `.you/decisions.log` for transparency
+
+The entire software company runs autonomously - when an agent asks "Which one should I do first?" or "Should I implement X?", the system automatically provides CEO-level responses based on best practices. **Zero human intervention required** until completion.
+
 This:
 - Creates a Goal from your user input
 - Initializes workflow state
 - Generates `ORCHESTRATION_GUIDE.md`
 
-### 4. Run OpenCode
+### 4. Monitor the Workflow
 
-```bash
-opencode
-```
-
-In OpenCode, invoke the CEO agent:
-
-```
-@ceo Read USER_INPUT.md and orchestrate the team to build this project.
-```
-
-The CEO agent will then:
-1. Delegate to `@product-manager` to create a PRD
-2. Monitor as PM delegates to `@product-designer`
-3. Designer delegates to `@solution-architect`
-4. Architect delegates to `@lead-engineer`
+Once `--orchestrate` launches OpenCode, the CEO agent automatically begins the workflow:
+1. Delegates to `@product-manager` to create a PRD
+2. PM delegates to `@product-designer` for UI/UX
+3. Designer delegates to `@solution-architect` for architecture
+4. Architect delegates to `@lead-engineer` for task breakdown
 5. Lead Engineer assigns tasks to `@software-engineer` agents
 6. `@qa-engineer` validates the implementation
 7. `@security-engineer` performs security audit
 8. `@devops-sre` sets up deployment
 9. `@technical-writer` creates documentation
 10. CEO approves final deliverable
+
+All artifacts and state are tracked in the `.you/` directory.
 
 ---
 
@@ -206,7 +218,33 @@ All artifacts are tracked in `.you/`:
 ├── artifacts/       # PRDs, code, test reports, docs
 ├── tasks/           # Individual task definitions
 ├── workflows/       # Goals and workflow state
-└── communications/  # Agent-to-agent messages
+├── communications/  # Agent-to-agent messages
+└── decisions.log    # Audit trail of all automated decisions
+```
+
+### Intelligent Auto-Response System
+
+When agents need decisions, **You** automatically provides CEO-level responses without requiring human input:
+
+| Agent Question | Auto-Response |
+|----------------|---------------|
+| "Which task should I start first?" | "Start with foundational components that others depend on" |
+| "Should I use React or Vue?" | "Use technology with strong community support and best practices - research using webfetch" |
+| "How should I structure this?" | "Follow SOLID principles, keep it maintainable" |
+| "Should I write tests?" | "Yes, implement comprehensive tests - unit, integration, E2E" |
+| "How to handle this security concern?" | "Always prioritize security, use industry standards" |
+| "Need clarification on X" | "Make reasonable assumption based on best practices, document it, and proceed" |
+
+All decisions are logged to `.you/decisions.log` for full transparency:
+
+```
+[2026-01-23 14:30:22]
+Q: Which component should I implement first?
+A: Start with the most foundational and critical component that other parts depend on. Follow the natural dependency order.
+
+[2026-01-23 14:35:18]
+Q: Should I implement authentication using JWT or sessions?
+A: Use the technology that best matches our requirements, has strong community support, and aligns with modern best practices. Research if needed using webfetch.
 ```
 
 ### Agent Communication
@@ -309,8 +347,7 @@ OpenCode presents available skills to agents, who load them on-demand for struct
 you --presets
 # Edit USER_INPUT.md with: "Build a blog platform with user authentication"
 you --orchestrate
-opencode
-# In OpenCode: @ceo Read USER_INPUT.md and build this project
+# OpenCode launches automatically with CEO agent orchestrating the build
 ```
 
 ### Example 2: CLI Tool
@@ -319,8 +356,7 @@ opencode
 you --presets
 # Edit USER_INPUT.md with: "Build a CLI tool for managing TODO lists"
 you --orchestrate
-opencode
-# In OpenCode: @ceo Read USER_INPUT.md and build this project
+# OpenCode launches automatically with CEO agent orchestrating the build
 ```
 
 ### Example 3: API Service
@@ -329,8 +365,7 @@ opencode
 you --presets
 # Edit USER_INPUT.md with: "Build a REST API for a book library"
 you --orchestrate
-opencode
-# In OpenCode: @ceo Read USER_INPUT.md and build this project
+# OpenCode launches automatically with CEO agent orchestrating the build
 ```
 
 ---

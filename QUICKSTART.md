@@ -95,6 +95,10 @@ This will:
 - Create a Goal from your USER_INPUT.md
 - Initialize workflow state in `.you/workflows/`
 - Generate `ORCHESTRATION_GUIDE.md`
+- **Automatically launch OpenCode with the CEO agent**
+- **Auto-respond to all agent questions** - no manual prompting needed!
+
+The entire AI software company runs autonomously. When agents ask questions like "Which feature first?" or "Should I add tests?", the system provides intelligent CEO-level responses automatically. Check `.you/decisions.log` for the decision audit trail.
 
 ## Step 5: Run OpenCode
 
@@ -185,13 +189,31 @@ Specify your preferred:
 - Check artifacts as they're created
 - Review task progress
 - Verify workflow state
+- **Check `.you/decisions.log`** to see all automated decisions
 
-### 5. Iterate with Agents
-If something isn't right, just tell the agent:
+### 5. Iterate with Agents (If Needed)
+The system is fully autonomous, but you can intervene if needed:
 ```
 @lead-engineer The authentication approach in the architecture seems overcomplicated.
 Can we simplify it to use JWT instead of sessions?
 ```
+
+## Autonomous Decision-Making
+
+**You** handles all agent questions automatically:
+
+```
+[Agent]: "Which component should I build first - auth or database layer?"
+[Auto-Response]: "Start with the database layer as authentication depends on it."
+
+[Agent]: "Should I add input validation?"  
+[Auto-Response]: "Yes, implement comprehensive input validation for security."
+
+[Agent]: "Which testing framework - testify or standard testing?"
+[Auto-Response]: "Use technology with strong community support and best practices. Research using webfetch."
+```
+
+All decisions appear in your terminal with a 🤖 prefix and are logged to `.you/decisions.log`.
 
 ## Troubleshooting
 

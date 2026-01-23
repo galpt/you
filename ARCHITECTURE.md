@@ -190,9 +190,109 @@ project-root/
     │   ├── goal_*.json
     │   └── state_*.json
     │
-    └── communications/       # Agent message logs
-        └── comm_*.json
+    ├── communications/       # Agent message logs
+    │   └── comm_*.json
+    │
+    └── decisions.log         # Audit trail of automated decisions
 ```
+
+## Auto-Response System Architecture
+
+```
+OpenCode Process
+     ↓
+  stdout pipe
+     ↓
+  ┌────────────────────────────┐
+  │  Output Monitor (goroutine)│
+  │  • Scans each line          │
+  │  • Pattern matching         │
+  │  • Question detection       │
+  └────────────────────────────┘
+     ↓
+  Question Detected?
+     ↓
+  ┌────────────────────────────┐
+  │  Decision Engine            │
+  │  • Extract context          │
+  │  • Generate CEO response    │
+  │  • Log decision             │
+  └────────────────────────────┘
+     ↓
+  stdin pipe
+     ↓
+  OpenCode receives response
+     ↓
+  Agent continues working
+```
+
+### Decision Pattern Matching
+
+The system detects these question patterns:
+
+| Pattern | Example | Auto-Response Strategy |
+|---------|---------|------------------------|
+| `?$` | "Should I add tests?" | Context-aware yes/no with reasoning |
+| `which one` | "Which component first?" | Dependency-based prioritization |
+| `should i` | "Should I use React?" | Best practices + research suggestion |
+| `do you want` | "Do you want me to optimize?" | Strategic decision based on phase |
+| `please (choose\|select)` | "Please choose A or B" | Value-based selection |
+| `confirm` | "Confirm deployment?" | Phase-appropriate approval |
+| `clarify` | "Need clarification" | Assumption + documentation |
+
+### Response Generation Logic
+
+```go
+func generateAutoResponse(context string) string {
+    // 1. Priority/Sequencing
+    if containsPattern(context, "which.*first") {
+        return "Start with foundational components"
+    }
+    
+    // 2. Technical Choices
+    if containsPattern(context, "should i use|which technology") {
+        return "Use proven tech with strong community + research"
+    }
+    
+    // 3. Architecture Decisions
+    if containsPattern(context, "architecture|design pattern") {
+        return "Follow SOLID, keep it maintainable"
+    }
+    
+    // 4. Testing
+    if containsPattern(context, "test.*should") {
+        return "Yes, comprehensive testing required"
+    }
+    
+    // ... 10+ more decision patterns
+    
+    // Default
+    return "Use professional judgment and best practices"
+}
+```
+
+### Decision Audit Trail
+
+Every automated decision is logged to `.you/decisions.log`:
+
+```
+[2026-01-23 14:30:22]
+Q: Which component should I implement first - authentication or database models?
+A: Start with the most foundational and critical component that other parts depend on. Follow the natural dependency order.
+
+[2026-01-23 14:35:18]
+Q: Should I add input validation to the API endpoints?
+A: Yes, implement comprehensive input validation for security and data integrity.
+
+[2026-01-23 14:42:05]
+Q: Which testing framework should I use - testify or standard testing?
+A: Use the technology that best matches our requirements, has strong community support, and aligns with modern best practices. Research if needed using webfetch.
+```
+
+This provides:
+- **Transparency**: Full visibility into automated decisions
+- **Auditability**: Track reasoning for post-mortem analysis
+- **Learning**: Understand decision patterns over time
 
 ## Agent Communication Protocol
 
