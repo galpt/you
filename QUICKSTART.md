@@ -104,25 +104,30 @@ you --orchestrate
 ```
 🔧 Starting OpenCode server...
 📝 Creating orchestration session...
-✓ Session created: abc123
+✓ Session created: ses_414190ba65ffeRPG3382HKeVEZH
 
-🎭 Sending initial prompt to CEO agent...
-✓ CEO agent is now orchestrating the team!
+🎭 Sending initial message to session...
+✓ Message queued! CEO agent will receive it and start orchestrating.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📡 Streaming real-time events (press Ctrl+C to stop):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 💬 [assistant] ceo
-   ⚙️  text...
-Reading USER_INPUT.md... Delegating to @product-manager...
-   📄 created: requirements/PRD.md
+Reading USER_INPUT.md... Analyzing requirements...
+   👤 Delegating to: @product-manager
+   🔧 Tool: task (running...)
+   ✓ Tool task: Delegated to product-manager
+
 💬 [assistant] product-manager
-   Creating comprehensive PRD...
-   🔧 Tool: webfetch (researching best practices)
+Creating comprehensive PRD...
+   🔧 Tool: webfetch (running...)
+   ✓ Tool webfetch: Researched best practices
    📄 modified: requirements/PRD.md
-   🔧 Tool: delegate (to @product-designer)
-...
+   ✓ Tool write completed
+   👤 Delegating to: @product-designer
+
+✓ Session completed!
 ```
 
 **Fully autonomous** - no human interaction needed! Press `Ctrl+C` anytime to stop.

@@ -39,3 +39,7 @@ ORCHESTRATION_GUIDE.md
 
 # Project metadata (manually managed, avoid auto-updates)
 CHANGELOG.md
+
+# Release notes (content goes in GitHub Releases description)
+RELEASE_NOTES_*.md
+DOCUMENTATION_VERIFICATION.md

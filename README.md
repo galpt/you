@@ -32,7 +32,7 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 
 ## Status
 
-**Current Version**: 0.1.0-beta
+**Current Version**: 0.1.1
 
 This is an early beta release. The orchestrator can:
 - ✅ Generate OpenCode agent configurations
@@ -169,25 +169,28 @@ you --orchestrate
 ```
 🔧 Starting OpenCode server...
 📝 Creating orchestration session...
-✓ Session created: abc123
+✓ Session created: ses_414190ba65ffeRPG3382HKeVEZH
 
-🎭 Sending initial prompt to CEO agent...
-✓ CEO agent is now orchestrating the team!
+🎭 Sending initial message to session...
+✓ Message queued! CEO agent will receive it and start orchestrating.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📡 Streaming real-time events (press Ctrl+C to stop):
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 💬 [assistant] ceo
-   ⚙️  text...
-Reading USER_INPUT.md... Delegating to @product-manager...
-   📄 created: requirements/PRD.md
+Reading USER_INPUT.md...
+   👤 Delegating to: @product-manager
+   🔧 Tool: task (running...)
+   ✓ Tool task: Delegated to product-manager
+
 💬 [assistant] product-manager
-   ⚙️  text...
 Creating comprehensive Product Requirements Document...
    📄 modified: requirements/PRD.md
-   🔧 Tool: delegate
-...
+   ✓ Tool write completed
+   👤 Delegating to: @product-designer
+
+✓ Session completed!
 ```
 
 ### 4. Re-orchestration (if errors occur)
@@ -286,18 +289,18 @@ All artifacts are tracked in `.you/`:
    - Sessions are isolated and independent
    - Multiple re-orchestrations = multiple sessions
 
-3. **Sending Asynchronous Prompt** (`POST /session/:id/prompt_async`)
+3. **Sending Message** (`POST /session/:id/message`)
    - Sends initial message to CEO agent
-   - Doesn't wait for response (truly async)
+   - Fire-and-forget in background goroutine
    - CEO agent immediately starts orchestrating
 
 4. **Streaming Real-time Events** (`GET /event` - Server-Sent Events)
    - Subscribes to OpenCode event stream
    - Receives updates in real-time:
-     - `message.created` - New agent message
-     - `message.part.delta` - Streaming text chunks
-     - `file.changed` - File created/modified/deleted
-     - `tool.call` - Tool invocations (delegate, webfetch, etc.)
+     - `message.updated` - New agent message
+     - `message.part.updated` - Streaming text chunks and tool calls
+     - `file.edited` - File created/modified
+     - `session.status` - Session state changes (idle, busy, retry)
    - Formats and displays events in terminal
 
 **Result**: Fully autonomous operation with complete visibility!

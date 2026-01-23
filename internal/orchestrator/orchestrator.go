@@ -528,8 +528,8 @@ func (o *Orchestrator) orchestrateViaAPI(baseURL string) error {
 	// Send message in goroutine - don't wait for response
 	// The event stream will show all the activity
 	go func() {
-		// Use a client with reasonable timeout for the HTTP request itself (not AI processing)
-		sendClient := &http.Client{Timeout: 30 * time.Second}
+		// No timeout - OpenCode can take time to process the message queue
+		sendClient := &http.Client{}
 		if err := o.sendPromptAsync(sendClient, baseURL, sessionID, prompt); err != nil {
 			fmt.Printf("\n⚠️  Warning: Failed to send message: %v\n", err)
 			fmt.Println("   But event stream is still running - check for activity")
@@ -687,41 +687,84 @@ func (o *Orchestrator) streamEvents(ctx context.Context, baseURL string) error {
 // displayEvent formats and displays an event from the SSE stream
 func (o *Orchestrator) displayEvent(event map[string]interface{}) {
 	eventType, _ := event["type"].(string)
+	properties, _ := event["properties"].(map[string]interface{})
 	
 	switch eventType {
-	case "message.created":
-		if role, ok := event["role"].(string); ok {
-			agent := event["agent"]
-			fmt.Printf("💬 [%s] %v\n", role, agent)
-		}
-	
-	case "message.part.start":
-		if partType, ok := event["partType"].(string); ok {
-			fmt.Printf("   ⚙️  %s...\n", partType)
-		}
-	
-	case "message.part.delta":
-		if delta, ok := event["delta"].(map[string]interface{}); ok {
-			if text, ok := delta["text"].(string); ok && text != "" {
-				fmt.Print(text)
+	case "server.connected":
+		// Silent - just connected
+		return
+		
+	case "message.updated":
+		// New message created or updated
+		if info, ok := properties["info"].(map[string]interface{}); ok {
+			role, _ := info["role"].(string)
+			agent, _ := info["agent"].(string)
+			if agent != "" {
+				fmt.Printf("\n💬 [%s] %s\n", role, agent)
 			}
 		}
 	
-	case "file.changed":
-		if path, ok := event["path"].(string); ok {
-			changeType, _ := event["changeType"].(string)
-			fmt.Printf("   📄 %s: %s\n", changeType, path)
+	case "message.part.updated":
+		// Message part updated (tool call, text, etc.)
+		if part, ok := properties["part"].(map[string]interface{}); ok {
+			partType, _ := part["type"].(string)
+			
+			switch partType {
+			case "text":
+				// Streaming text delta
+				if delta, ok := properties["delta"].(string); ok && delta != "" {
+					fmt.Print(delta)
+				}
+				
+			case "tool":
+				// Tool call
+				tool, _ := part["tool"].(string)
+				state, _ := part["state"].(map[string]interface{})
+				status, _ := state["status"].(string)
+				
+				switch status {
+				case "running":
+					fmt.Printf("   🔧 Tool: %s (running...)\n", tool)
+				case "completed":
+					title, _ := state["title"].(string)
+					if title != "" {
+						fmt.Printf("   ✓ Tool %s: %s\n", tool, title)
+					} else {
+						fmt.Printf("   ✓ Tool %s completed\n", tool)
+					}
+				}
+				
+			case "agent":
+				// Agent delegation
+				agentName, _ := part["name"].(string)
+				fmt.Printf("   👤 Delegating to: @%s\n", agentName)
+			}
 		}
 	
-	case "tool.call":
-		if tool, ok := event["tool"].(string); ok {
-			fmt.Printf("   🔧 Tool: %s\n", tool)
+	case "file.edited":
+		// File was created or modified
+		if file, ok := properties["file"].(string); ok {
+			fmt.Printf("   📄 modified: %s\n", file)
 		}
-	
+		
+	case "session.status":
+		// Session status change (idle, busy, retry)
+		if status, ok := properties["type"].(string); ok {
+			switch status {
+			case "busy":
+				// Silent - normal working state
+			case "idle":
+				fmt.Println("\n✓ Session completed!")
+			case "retry":
+				message, _ := properties["message"].(string)
+				fmt.Printf("\n⚠️  Retry: %s\n", message)
+			}
+		}
+		
 	default:
-		// For debugging: show unknown events
+		// For debugging: uncomment to see all events
 		// jsonBytes, _ := json.MarshalIndent(event, "", "  ")
-		// fmt.Printf("🔔 %s\n", string(jsonBytes))
+		// fmt.Printf("🔔 %s: %s\n", eventType, string(jsonBytes))
 	}
 }
 

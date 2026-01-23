@@ -30,7 +30,7 @@
    - **HTTP API Integration** for autonomous orchestration:
      - Launches OpenCode server (`opencode serve --port 4096`)
      - Creates HTTP sessions (`POST /session`)
-     - Sends async prompts to CEO agent (`POST /session/:id/prompt_async`)
+     - Sends messages to CEO agent (`POST /session/:id/message`) - fire-and-forget in goroutine
      - Streams real-time events (`GET /event` via Server-Sent Events)
    - Generates USER_INPUT.md template
    - Creates OpenCode agent definitions (.opencode/agents/*.md)
@@ -98,7 +98,7 @@ Launch opencode serve --port 4096 (background)
     ↓
 POST /session → Create new session
     ↓
-POST /session/:id/prompt_async → Send prompt to CEO agent (async!)
+POST /session/:id/message → Send message to CEO agent (fire-and-forget in goroutine!)
     ↓
 GET /event → Stream Server-Sent Events in real-time
     ↓
@@ -176,15 +176,15 @@ Agents communicate via OpenCode's `delegate` tool (Task tool):
 ### Key Endpoints Used
 
 1. **POST /session** - Create orchestration session
-2. **POST /session/:id/prompt_async** - Send message without waiting (crucial for autonomy!)
+2. **POST /session/:id/message** - Send message (fire-and-forget, runs in goroutine)
 3. **GET /event** - Server-Sent Events stream for real-time updates
 
 ### Event Types Processed
 
-- `message.created` - New agent message
-- `message.part.delta` - Streaming text chunks
-- `file.changed` - File operations (created/modified/deleted)
-- `tool.call` - Tool invocations (delegate, webfetch, etc.)
+- `message.updated` - New agent message or update
+- `message.part.updated` - Streaming text chunks, tool calls, agent delegations
+- `file.edited` - File operations (created/modified)
+- `session.status` - Session state changes (idle, busy, retry)
 
 ### Why HTTP API vs TUI?
 
