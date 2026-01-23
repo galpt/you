@@ -67,13 +67,16 @@ This is an early beta release. The orchestrator can:
 ```bash
 # Clone the repository
 git clone https://github.com/galpt/you.git
-cd you/push-to-github
+cd you
 
 # Install dependencies
 go mod download
 
 # Build the binary
+# Windows:
 go build -o you.exe .
+# Linux/Mac:
+go build -o you .
 
 # (Optional) Add to PATH for global access
 # Windows: Copy you.exe to a directory in your PATH
@@ -92,13 +95,17 @@ Download the latest binary from the [Releases](https://github.com/galpt/you/rele
 
 ```bash
 cd your-new-project
+# Windows:
 you.exe --presets
+# Linux/Mac:
+you --presets
 ```
 
 This creates:
 - `USER_INPUT.md` - Template for your project requirements
 - `.opencode/agents/*.md` - 10 specialized agent definitions
 - `.opencode/opencode.json` - OpenCode configuration
+- `.opencode/skills/*/SKILL.md` - 5 professional skill definitions
 - `.you/` - State management directory
 
 ### 2. Define Your Project
@@ -125,7 +132,10 @@ authentication and a clean, modern UI using Next.js and Tailwind CSS.
 ### 3. Start Orchestration
 
 ```bash
+# Windows:
 you.exe --orchestrate
+# Linux/Mac:
+you --orchestrate
 ```
 
 This:
@@ -218,7 +228,8 @@ Each agent has specific permissions and tools defined in `.opencode/opencode.jso
 
 ```
 you/
-├── cmd/                    # CLI entry points (future expansion)
+├── .github/
+│   └── workflows/         # CI/CD automation
 ├── internal/
 │   ├── agents/            # Agent templates and prompts
 │   │   ├── templates.go   # Agent configurations
@@ -226,9 +237,9 @@ you/
 │   ├── models/            # Data models (Goal, Artifact, Task, etc.)
 │   ├── orchestrator/      # Core orchestration logic
 │   └── state/             # SCR (Shared Certified Repository)
-├── templates/             # File templates
 ├── main.go                # CLI entry point
-└── go.mod
+├── go.mod                 # Go module definition
+└── README.md
 ```
 
 **Design Principles**:
@@ -256,7 +267,9 @@ you/
 
 **All agents have web browsing capabilities** to research documentation, verify latest library syntax, and prevent outdated implementations. Before writing code for external dependencies, agents automatically use `webfetch` to validate current best practices.
 
+**All agents can load professional skills** via the `skill` tool to access standardized workflows for their role-specific tasks (PRD creation, code reviews, security audits, etc.).
 
+Each agent has a custom system prompt based on the fine-tuned prompts in [copilot-agent-modes/chatmode-v3.1/](https://github.com/galpt/copilot-agent-modes/tree/main/chatmode-v3.1).
 ---
 
 ## Professional Skills
@@ -293,9 +306,9 @@ OpenCode presents available skills to agents, who load them on-demand for struct
 ### Example 1: Web Application
 
 ```bash
-you.exe --presets
+you --presets
 # Edit USER_INPUT.md with: "Build a blog platform with user authentication"
-you.exe --orchestrate
+you --orchestrate
 opencode
 # In OpenCode: @ceo Read USER_INPUT.md and build this project
 ```
@@ -303,9 +316,9 @@ opencode
 ### Example 2: CLI Tool
 
 ```bash
-you.exe --presets
+you --presets
 # Edit USER_INPUT.md with: "Build a CLI tool for managing TODO lists"
-you.exe --orchestrate
+you --orchestrate
 opencode
 # In OpenCode: @ceo Read USER_INPUT.md and build this project
 ```
@@ -313,9 +326,9 @@ opencode
 ### Example 3: API Service
 
 ```bash
-you.exe --presets
+you --presets
 # Edit USER_INPUT.md with: "Build a REST API for a book library"
-you.exe --orchestrate
+you --orchestrate
 opencode
 # In OpenCode: @ceo Read USER_INPUT.md and build this project
 ```

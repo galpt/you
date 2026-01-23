@@ -102,9 +102,7 @@ jobs:
     - name: Prepare release assets
       run: |
         mkdir -p release
-        find artifacts -type f -name "*.zip" -o -name "*.tar.gz" | while read file; do
-          cp "$file" release/
-        done
+        find artifacts -type f \( -name "*.zip" -o -name "*.tar.gz" \) -exec cp {} release/ \;
         ls -lh release/
 
     - name: Generate release tag

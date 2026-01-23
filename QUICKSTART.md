@@ -18,13 +18,19 @@ Get started with You orchestrator in 5 minutes.
 ```bash
 # Clone the repository
 git clone https://github.com/galpt/you.git
-cd you/push-to-github
+cd you
 
 # Build the binary
+# Windows:
 go build -o you.exe .
+# Linux/Mac:
+go build -o you .
 
 # Test installation
-./you.exe --version
+# Windows:
+.\you.exe --version
+# Linux/Mac:
+./you --version
 ```
 
 ## Step 2: Create a New Project
@@ -35,13 +41,17 @@ mkdir my-awesome-project
 cd my-awesome-project
 
 # Generate preset files
-/path/to/you.exe --presets
+# Windows:
+you.exe --presets
+# Linux/Mac:
+you --presets
 ```
 
 This creates:
 - `USER_INPUT.md` - Your project requirements
 - `.opencode/agents/*.md` - 10 AI agent definitions
 - `.opencode/opencode.json` - OpenCode configuration
+- `.opencode/skills/*/SKILL.md` - 5 professional skill definitions
 - `.you/` - State management directory
 
 ## Step 3: Define Your Project
@@ -75,7 +85,10 @@ Build a REST API for a blog platform with the following features:
 ## Step 4: Start Orchestration
 
 ```bash
-/path/to/you.exe --orchestrate
+# Windows:
+you.exe --orchestrate
+# Linux/Mac:
+you --orchestrate
 ```
 
 This will:
@@ -133,13 +146,13 @@ Here's a real example:
 # 1. Setup
 mkdir task-manager-app
 cd task-manager-app
-you.exe --presets
+you --presets
 
 # 2. Edit USER_INPUT.md
 echo "Build a task manager web app with Next.js and Tailwind" > USER_INPUT.md
 
 # 3. Orchestrate
-you.exe --orchestrate
+you --orchestrate
 
 # 4. Start OpenCode
 opencode
