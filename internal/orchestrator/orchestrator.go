@@ -169,12 +169,14 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "edit": false,
         "bash": false,
         "webfetch": true
-      },\n        "skill": true,
+      },
+      "skill": true,
       "permission": {
         "task": "allow",
-        "webfetch": "allow",\n        "skill": "allow"
+        "webfetch": "allow",
+        "skill": "allow"
       },
-      "prompt": "{file:.opencode/agents/ceo.md}"
+      "prompt": "{file:agents/ceo.md}"
     },
     "product-manager": {
       "description": "Defines requirements, creates PRDs, and validates acceptance criteria",
@@ -186,13 +188,15 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "edit": true,
         "bash": false,
         "webfetch": true
-      },\n        "skill": true,
+      },
+      "skill": true,
       "permission": {
         "edit": "allow",
         "task": "allow",
-        "webfetch": "allow",\n        "skill": "allow"
+        "webfetch": "allow",
+        "skill": "allow"
       },
-      "prompt": "{file:.opencode/agents/product-manager.md}"
+      "prompt": "{file:agents/product-manager.md}"
     },
     "product-designer": {
       "description": "Creates UI/UX designs, user flows, and design specifications",
@@ -204,13 +208,15 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "edit": true,
         "bash": false,
         "webfetch": true
-      },\n        "skill": true,
+      },
+      "skill": true,
       "permission": {
         "edit": "allow",
         "task": "allow",
-        "webfetch": "allow",\n        "skill": "allow"
+        "webfetch": "allow",
+        "skill": "allow"
       },
-      "prompt": "{file:.opencode/agents/product-designer.md}"
+      "prompt": "{file:agents/product-designer.md}"
     },
     "solution-architect": {
       "description": "Designs system architecture, tech stack, and data models",
@@ -222,13 +228,15 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "edit": true,
         "bash": false,
         "webfetch": true
-      },\n        "skill": true,
+      },
+      "skill": true,
       "permission": {
         "edit": "allow",
         "task": "allow",
-        "webfetch": "allow",\n        "skill": "allow"
+        "webfetch": "allow",
+        "skill": "allow"
       },
-      "prompt": "{file:.opencode/agents/solution-architect.md}"
+      "prompt": "{file:agents/solution-architect.md}"
     },
     "lead-engineer": {
       "description": "Breaks architecture into tasks, reviews code, manages releases",
@@ -240,14 +248,16 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "edit": true,
         "bash": true,
         "webfetch": true
-      },\n        "skill": true,
+      },
+      "skill": true,
       "permission": {
         "edit": "allow",
         "bash": "allow",
         "task": "allow",
-        "webfetch": "allow",\n        "skill": "allow"
+        "webfetch": "allow",
+        "skill": "allow"
       },
-      "prompt": "{file:.opencode/agents/lead-engineer.md}"
+      "prompt": "{file:agents/lead-engineer.md}"
     },
     "software-engineer": {
       "description": "Implements features, writes tests, and submits code for review",
@@ -259,13 +269,15 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "edit": true,
         "bash": true,
         "webfetch": true
-      },\n        "skill": true,
+      },
+      "skill": true,
       "permission": {
         "edit": "allow",
         "bash": "allow",
-        "webfetch": "allow",\n        "skill": "allow"
+        "webfetch": "allow",
+        "skill": "allow"
       },
-      "prompt": "{file:.opencode/agents/software-engineer.md}"
+      "prompt": "{file:agents/software-engineer.md}"
     },
     "qa-engineer": {
       "description": "Performs automated testing, validates requirements, reports bugs",
@@ -277,14 +289,16 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "edit": true,
         "bash": true,
         "webfetch": true
-      },\n        "skill": true,
+      },
+      "skill": true,
       "permission": {
         "edit": "allow",
         "bash": "allow",
         "task": "allow",
-        "webfetch": "allow",\n        "skill": "allow"
+        "webfetch": "allow",
+        "skill": "allow"
       },
-      "prompt": "{file:.opencode/agents/qa-engineer.md}"
+      "prompt": "{file:agents/qa-engineer.md}"
     },
     "security-engineer": {
       "description": "Conducts security audits, identifies vulnerabilities, ensures secure coding practices",
@@ -296,13 +310,15 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "edit": false,
         "bash": true,
         "webfetch": true
-      },\n        "skill": true,
+      },
+      "skill": true,
       "permission": {
         "edit": "deny",
         "bash": "allow",
-        "webfetch": "allow",\n        "skill": "allow"
+        "webfetch": "allow",
+        "skill": "allow"
       },
-      "prompt": "{file:.opencode/agents/security-engineer.md}"
+      "prompt": "{file:agents/security-engineer.md}"
     },
     "devops-sre": {
       "description": "Manages CI/CD pipelines, infrastructure, deployment, and observability",
@@ -314,14 +330,16 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "edit": true,
         "bash": true,
         "webfetch": true
-      },\n        "skill": true,
+      },
+      "skill": true,
       "permission": {
         "edit": "allow",
         "bash": "ask",
         "task": "allow",
-        "webfetch": "allow",\n        "skill": "allow"
+        "webfetch": "allow",
+        "skill": "allow"
       },
-      "prompt": "{file:.opencode/agents/devops-sre.md}"
+      "prompt": "{file:agents/devops-sre.md}"
     },
     "technical-writer": {
       "description": "Creates documentation, API references, user guides, and changelogs",
@@ -333,12 +351,14 @@ func (o *Orchestrator) createOpenCodeConfig() error {
         "edit": true,
         "bash": false,
         "webfetch": true
-      },\n        "skill": true,
+      },
+      "skill": true,
       "permission": {
         "edit": "allow",
-        "webfetch": "allow",\n        "skill": "allow"
+        "webfetch": "allow",
+        "skill": "allow"
       },
-      "prompt": "{file:.opencode/agents/technical-writer.md}"
+      "prompt": "{file:agents/technical-writer.md}"
     }
   }
 }
