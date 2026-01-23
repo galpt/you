@@ -84,26 +84,46 @@ Content-Type: application/json
 
 **Result:** New isolated session for this orchestration
 
-### 4. Send Initial Prompt to CEO Agent (Async!)
+### 4. Send Initial Message to Session
 
 ```go
-POST http://localhost:4096/session/abc123/prompt_async
+POST http://localhost:4096/session/abc123/message
 Content-Type: application/json
 
 {
-  "agent": "ceo",
+  "messageID": "550e8400-e29b-41d4-a716-446655440000",
+  "providerID": "github-copilot",
+  "modelID": "github-copilot/gpt-5-mini",
+  "mode": "build",
   "parts": [
     {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "sessionID": "abc123",
+      "messageID": "550e8400-e29b-41d4-a716-446655440000",
       "type": "text",
       "text": "Read USER_INPUT.md and orchestrate the team to build this project..."
     }
   ]
 }
 
-→ Response: 204 No Content (doesn't wait for response!)
+→ Response: 200 OK (returns message object)
+{
+  "id": "msg_xxx",
+  "role": "assistant",
+  "parts": [...],
+  "metadata": {...}
+}
 ```
 
-**Critical:** `/prompt_async` endpoint doesn't block - it returns immediately while the agent processes in the background.
+**Key Details:**
+- **Endpoint**: `/message` NOT `/prompt_async`
+- **Required Fields**: `messageID`, `providerID`, `modelID`, `mode` (all required by OpenCode API)
+- **Part Structure**: Each part needs `id`, `sessionID`, `messageID` fields
+- **UUIDs**: Generate unique IDs for message and each part
+- **No "agent" field**: OpenCode routes to primary agents automatically
+- **Returns 200**: Response includes the assistant's message object
+
+**Reference:** Implementation based on [opencode-web](https://github.com/chris-tse/opencode-web) project
 
 ### 5. Stream Real-time Events
 

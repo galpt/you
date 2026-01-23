@@ -18,6 +18,8 @@ import (
 	"you/internal/agents"
 	"you/internal/models"
 	"you/internal/state"
+
+	"github.com/google/uuid"
 )
 
 // Orchestrator manages the workflow of AI agents
@@ -497,11 +499,11 @@ func (o *Orchestrator) orchestrateViaAPI(baseURL string) error {
 	// 3. Send initial prompt to CEO agent (async, doesn't wait for response)
 	prompt := "Read USER_INPUT.md and orchestrate the team to build this project. Follow the workflow phases defined in ORCHESTRATION_GUIDE.md. Start by delegating to @product-manager to create a comprehensive PRD."
 	
-	fmt.Println("🎭 Sending initial prompt to CEO agent...")
-	if err := o.sendPromptAsync(client, baseURL, sessionID, "ceo", prompt); err != nil {
-		return fmt.Errorf("failed to send prompt: %w", err)
+	fmt.Println("🎭 Sending initial message to session...")
+	if err := o.sendPromptAsync(client, baseURL, sessionID, prompt); err != nil {
+		return fmt.Errorf("failed to send message: %w", err)
 	}
-	fmt.Println("✓ CEO agent is now orchestrating the team!")
+	fmt.Println("✓ Message sent! CEO agent will receive it and start orchestrating.")
 	fmt.Println()
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	fmt.Println("📡 Streaming real-time events (press Ctrl+C to stop):")
@@ -554,20 +556,33 @@ func (o *Orchestrator) createSession(client *http.Client, baseURL string) (strin
 	return session.ID, nil
 }
 
-// sendPromptAsync sends a prompt to an agent asynchronously (doesn't wait for response)
-func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, agent, message string) error {
+// sendPromptAsync sends a message to the session
+// OpenCode routes messages to primary agents automatically
+func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, message string) error {
+	// Generate UUIDs for message and part
+	messageID := uuid.New().String()
+	partID := uuid.New().String()
+	
+	// OpenCode message format (from opencode-web reference implementation)
 	reqBody := map[string]interface{}{
-		"agent": agent,
+		"messageID":  messageID,
+		"providerID": "github-copilot",
+		"modelID":    "github-copilot/gpt-5-mini",
+		"mode":       "build",
 		"parts": []map[string]interface{}{
 			{
-				"type": "text",
-				"text": message,
+				"id":        partID,
+				"sessionID": sessionID,
+				"messageID": messageID,
+				"type":      "text",
+				"text":      message,
 			},
 		},
 	}
 	
 	jsonBody, _ := json.Marshal(reqBody)
-	url := fmt.Sprintf("%s/session/%s/prompt_async", baseURL, sessionID)
+	// Correct endpoint: /session/{id}/message NOT /prompt_async
+	url := fmt.Sprintf("%s/session/%s/message", baseURL, sessionID)
 	
 	resp, err := client.Post(url, "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
@@ -575,7 +590,8 @@ func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, 
 	}
 	defer resp.Body.Close()
 	
-	if resp.StatusCode != http.StatusNoContent {
+	// OpenCode /message returns 200 with the message response, not 204
+	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
 	}
