@@ -210,7 +210,8 @@ you.exe --orchestrate
 - CEO agent receives the new prompt
 - Team rebuilds with corrected specifications
 
-**Note:** Each orchestration creates a new session. Previous sessions are preserved in `.you/goals/` for audit trail.
+> [!NOTE]
+> Each orchestration creates a new session. Previous sessions are preserved in `.you/goals/` for audit trail.
 
 ### 5. Agent Workflow (Automatic)
 
@@ -371,11 +372,11 @@ you/
 | **DevOps/SRE** | Infrastructure | Subagent | CI/CD, deployment, monitoring, observability |
 | **Technical Writer** | Documentation | Subagent | READMEs, API docs, user guides, changelogs |
 
-**All agents have web browsing capabilities** to research documentation, verify latest library syntax, and prevent outdated implementations. Before writing code for external dependencies, agents automatically use `webfetch` to validate current best practices.
+> [!NOTE]
+> 1. **All agents have web browsing capabilities** to research documentation, verify latest library syntax, and prevent outdated implementations. Before writing code for external dependencies, agents automatically use `webfetch` to validate current best practices.
+> 2. **All agents can load professional skills** via the `skill` tool to access standardized workflows for their role-specific tasks (PRD creation, code reviews, security audits, etc.).
+> 3. Each agent has a custom system prompt based on the fine-tuned prompts in [copilot-agent-modes/chatmode-v3.1/](https://github.com/galpt/copilot-agent-modes/tree/main/chatmode-v3.1).
 
-**All agents can load professional skills** via the `skill` tool to access standardized workflows for their role-specific tasks (PRD creation, code reviews, security audits, etc.).
-
-Each agent has a custom system prompt based on the fine-tuned prompts in [copilot-agent-modes/chatmode-v3.1/](https://github.com/galpt/copilot-agent-modes/tree/main/chatmode-v3.1).
 ---
 
 ## Professional Skills
