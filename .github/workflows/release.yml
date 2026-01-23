@@ -131,19 +131,20 @@ jobs:
         tag_name: ${{ steps.tag.outputs.tag }}
         name: You Orchestrator ${{ steps.tag.outputs.tag }}
         body: |
-          ## You - Agentic Orchestrator for OpenCode
+          ## You - Autonomous AI Orchestrator for OpenCode
 
           **Automated build from commit: `${{ github.sha }}`**
 
           ### 🚀 What's Included
 
           - ✅ Cross-platform binaries (Windows, Linux, macOS Intel/ARM)
-          - ✅ 10 specialized AI agents (CEO, PM, Designer, Architect, Engineers, QA, Security, DevOps, Writer)
+          - ✅ 10 specialized AI agents with autonomous decision-making
+          - ✅ **HTTP API integration** for fully autonomous orchestration
+          - ✅ **Real-time event streaming** via Server-Sent Events
           - ✅ Professional skills for software engineering workflows
           - ✅ Web research capabilities via `webfetch` tool
-          - ✅ OpenCode integration with native agent system
-          - ✅ State management (Shared Certified Repository)
-          - ✅ Comprehensive documentation
+          - ✅ State management with session isolation
+          - ✅ Re-orchestration support for iterative development
 
           ### 📦 Available Builds
 
@@ -160,22 +161,33 @@ jobs:
           2. Extract to a directory
           3. Run `you --presets` to generate agent configurations
           4. Edit `USER_INPUT.md` with your project requirements
-          5. Run `you --orchestrate` to start the workflow
-          6. Open OpenCode and invoke `@ceo` to begin
+          5. Run `you --orchestrate` to start **fully autonomous** orchestration
+          6. Watch real-time agent activity stream to your terminal!
 
           ### 📋 Requirements
 
           - **OpenCode**: Latest version ([install here](https://opencode.ai/docs/))
           - **GitHub Copilot Pro**: Recommended for unlimited GPT-5 Mini access
-          - **Go**: Not required (pre-compiled binaries included)
+          - **Alternative**: Any OpenCode-supported provider (Anthropic, OpenAI, etc.)
 
           ### ✨ Key Features
 
-          - **Single-Prompt Orchestration**: Describe once, agents handle the rest
-          - **Professional Skills**: Production-ready workflows following Software Engineering principles
-          - **Research-First Development**: Agents verify latest syntax before coding
-          - **Clean Architecture**: SOLID principles, minimal dependencies
-          - **State Tracking**: Persistent artifact and task management
+          - **Fully Autonomous Operation**: Zero human intervention required
+          - **HTTP API Integration**: Uses `opencode serve` for programmatic control
+          - **Real-time Visibility**: Server-Sent Events stream all agent activity
+          - **Re-orchestration Support**: Edit requirements and re-run for fresh start
+          - **Smart Agents**: Self-sufficient decision-making via webfetch research
+          - **Professional Skills**: Production-ready workflows (PRD, code review, security audit, etc.)
+          - **Clean Architecture**: SOLID principles, modular Go codebase
+
+          ### 🔄 How It Works
+
+          1. Launches OpenCode HTTP server in background
+          2. Creates isolated session for your project
+          3. Sends async prompt to CEO agent
+          4. CEO orchestrates entire team (PM → Designer → Architect → Engineers → QA → Security → DevOps → Docs)
+          5. All file changes, decisions, and tool calls stream to your terminal
+          6. Press Ctrl+C to stop, edit requirements, and re-orchestrate
 
           ### 🔐 Verification
 
@@ -187,7 +199,7 @@ jobs:
           **Commit:** `${{ github.sha }}`  
           **Go Version:** 1.21+
 
-          For documentation, see [README.md](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/README.md)
+          📖 [Full Documentation](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/README.md) | 🚀 [Quick Start Guide](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/QUICKSTART.md) | 🏗️ [Technical Details](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/TECHNICAL_DETAILS.md)
         files: |
           release/*
         draft: false

@@ -13,9 +13,9 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [How It Works](#how-it-works)
-- [Auto-Response System](#-intelligent-auto-response-system)
 - [Architecture](#architecture)
 - [Agent Roles](#agent-roles)
+- [Professional Skills](#professional-skills)
 - [Usage Examples](#usage-examples)
 - [Design Notes](#design-notes)
 - [Limitations & Roadmap](#limitations--roadmap)
@@ -23,8 +23,8 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 - [License](#license)
 
 ## Additional Documentation
-- [AUTO-RESPONSE.md](AUTO-RESPONSE.md) - Detailed auto-response system documentation
-- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture and data flow
+- [TECHNICAL_DETAILS.md](TECHNICAL_DETAILS.md) - HTTP API integration and autonomous orchestration deep dive
+- [IMPLEMENTATION.md](IMPLEMENTATION.md) - Complete implementation summary and architecture overview
 - [QUICKSTART.md](QUICKSTART.md) - 5-minute getting started guide
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
 
@@ -36,25 +36,27 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 
 This is an early beta release. The orchestrator can:
 - ✅ Generate OpenCode agent configurations
-- ✅ Set up workflow templates
+- ✅ Set up workflow templates and professional skills
 - ✅ Track artifacts and state in a Shared Certified Repository (SCR)
-- ✅ Provide orchestration guidance for AI agents
-- 🚧 Automated agent-to-agent handoffs (manual via OpenCode Task tool)
-- 🚧 Automatic error recovery and retry logic
+- ✅ **Fully autonomous orchestration via HTTP API**
+- ✅ **Real-time event streaming** via Server-Sent Events
+- ✅ **Re-orchestration support** with session isolation
+- 🚧 Multi-project concurrent orchestration
+- 🚧 Web UI dashboard for monitoring
 
 ---
 
 ## Features
 
+- **Fully Autonomous Operation**: Zero human intervention required - agents make intelligent decisions automatically via HTTP API
+- **Real-time Event Streaming**: Watch all agent activity, file changes, and decisions in real-time via Server-Sent Events
+- **Re-orchestration Support**: Edit requirements and re-run for fresh start with session isolation
 - **Single-Prompt Orchestration**: Describe your project once; agents handle the rest
 - **10 Specialized Agents**: CEO, Product Manager, Designer, Architect, Lead Engineer, SWE, QA, Security, DevOps, Technical Writer
-- **Fully Autonomous Operation**: Zero human intervention required - agents make intelligent decisions automatically
-- **Intelligent Auto-Response**: Automatically handles all agent questions and decision points using CEO-level logic
-- **Decision Audit Trail**: All automated decisions logged to `.you/decisions.log` for transparency
-- **Reusable Skills**: Agents can load standardized workflows via OpenCode skills (PRD creation, code review, security audits, etc.)
+- **Professional Skills**: Reusable workflows for PRD creation, code review, security audits, API design, deployment checklists
 - **Web Research Capabilities**: All agents can browse the internet to verify documentation and latest syntax before writing code
-- **Obsolescence Protocol**: Agents automatically research external libraries/APIs to prevent outdated implementations
-- **OpenCode Integration**: Seamless integration with OpenCode's agent system
+- **Smart Agent System**: Agents research best practices and make autonomous decisions based on industry standards
+- **OpenCode HTTP Integration**: Seamless integration with OpenCode's server API for programmatic control
 - **State Management**: Tracks goals, tasks, artifacts, and communications in a centralized SCR
 - **Production-Ready Code**: Clean architecture following SOLID principles
 - **Workflow Automation**: Agents follow a structured workflow from requirements to deployment
@@ -148,32 +150,81 @@ you.exe --orchestrate
 you --orchestrate
 ```
 
-This will:
-- Create a Goal from your USER_INPUT.md
-- Initialize workflow state
-- Generate `ORCHESTRATION_GUIDE.md`
-- **Automatically launch OpenCode with the CEO agent**
-- **Auto-respond to all agent questions** using intelligent CEO logic
-- **Log all decisions** to `.you/decisions.log` for transparency
+**What happens:**
+1. Creates a Goal from your USER_INPUT.md
+2. Initializes workflow state in `.you/`
+3. Generates `ORCHESTRATION_GUIDE.md`
+4. **Starts OpenCode server** (headless HTTP API)
+5. **Automatically sends initial prompt to CEO agent**
+6. **Streams all agent activity in real-time to your terminal**
 
-The entire software company runs autonomously - when an agent asks "Which one should I do first?" or "Should I implement X?", the system automatically provides CEO-level responses based on best practices. **Zero human intervention required** until completion.
+**Fully Autonomous:**
+- No human interaction required
+- Agents orchestrate themselves via CEO delegation
+- Real-time event streaming shows progress
+- Files appear as they're created
+- Press `Ctrl+C` anytime to stop
 
-This:
-- Creates a Goal from your user input
-- Initializes workflow state
-- Generates `ORCHESTRATION_GUIDE.md`
+**Example output:**
+```
+🔧 Starting OpenCode server...
+📝 Creating orchestration session...
+✓ Session created: abc123
 
-### 4. Monitor the Workflow
+🎭 Sending initial prompt to CEO agent...
+✓ CEO agent is now orchestrating the team!
 
-Once `--orchestrate` launches OpenCode, the CEO agent automatically begins the workflow:
-1. Delegates to `@product-manager` to create a PRD
-2. PM delegates to `@product-designer` for UI/UX
-3. Designer delegates to `@solution-architect` for architecture
-4. Architect delegates to `@lead-engineer` for task breakdown
-5. Lead Engineer assigns tasks to `@software-engineer` agents
-6. `@qa-engineer` validates the implementation
-7. `@security-engineer` performs security audit
-8. `@devops-sre` sets up deployment
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📡 Streaming real-time events (press Ctrl+C to stop):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💬 [assistant] ceo
+   ⚙️  text...
+Reading USER_INPUT.md... Delegating to @product-manager...
+   📄 created: requirements/PRD.md
+💬 [assistant] product-manager
+   ⚙️  text...
+Creating comprehensive Product Requirements Document...
+   📄 modified: requirements/PRD.md
+   🔧 Tool: delegate
+...
+```
+
+### 4. Re-orchestration (if errors occur)
+
+If something goes wrong or you want to refine the requirements:
+
+```bash
+# 1. Stop the current session (Ctrl+C)
+# 2. Edit USER_INPUT.md with updated requirements
+# 3. Re-run orchestration
+you.exe --orchestrate
+```
+
+**What happens:**
+- Creates a new goal with updated requirements
+- Starts a fresh OpenCode session
+- CEO agent receives the new prompt
+- Team rebuilds with corrected specifications
+
+**Note:** Each orchestration creates a new session. Previous sessions are preserved in `.you/goals/` for audit trail.
+
+### 5. Agent Workflow (Automatic)
+
+The CEO agent orchestrates the entire team **without human intervention**:
+
+1. `@ceo` → `@product-manager` - Create PRD
+2. `@product-manager` → `@product-designer` - UI/UX design
+3. `@product-designer` → `@solution-architect` - System architecture
+4. `@solution-architect` → `@lead-engineer` - Task breakdown
+5. `@lead-engineer` → `@software-engineer` - Implementation
+6. `@software-engineer` → `@qa-engineer` - Testing
+7. `@qa-engineer` → `@security-engineer` - Security audit
+8. `@security-engineer` → `@devops-sre` - Deployment setup
+9. `@devops-sre` → `@technical-writer` - Documentation
+10. `@technical-writer` → `@ceo` - Final approval
+
+**All delegation happens automatically via the `delegate` tool.** You just watch the stream!
 9. `@technical-writer` creates documentation
 10. CEO approves final deliverable
 
@@ -218,38 +269,53 @@ All artifacts are tracked in `.you/`:
 ├── artifacts/       # PRDs, code, test reports, docs
 ├── tasks/           # Individual task definitions
 ├── workflows/       # Goals and workflow state
-├── communications/  # Agent-to-agent messages
-└── decisions.log    # Audit trail of all automated decisions
+└── communications/  # Agent-to-agent messages
 ```
 
-### Intelligent Auto-Response System
+### Autonomous Orchestration via HTTP API
 
-When agents need decisions, **You** automatically provides CEO-level responses without requiring human input:
+**You** achieves full automation by:
 
-| Agent Question | Auto-Response |
-|----------------|---------------|
-| "Which task should I start first?" | "Start with foundational components that others depend on" |
-| "Should I use React or Vue?" | "Use technology with strong community support and best practices - research using webfetch" |
-| "How should I structure this?" | "Follow SOLID principles, keep it maintainable" |
-| "Should I write tests?" | "Yes, implement comprehensive tests - unit, integration, E2E" |
-| "How to handle this security concern?" | "Always prioritize security, use industry standards" |
-| "Need clarification on X" | "Make reasonable assumption based on best practices, document it, and proceed" |
+1. **Starting OpenCode Server** (`opencode serve --port 4096`)
+   - Headless HTTP server running in background
+   - Exposes RESTful API for programmatic control
+   - No TUI interaction required
 
-All decisions are logged to `.you/decisions.log` for full transparency:
+2. **Creating a Session** (`POST /session`)
+   - Each orchestration gets a new session ID
+   - Sessions are isolated and independent
+   - Multiple re-orchestrations = multiple sessions
 
+3. **Sending Asynchronous Prompt** (`POST /session/:id/prompt_async`)
+   - Sends initial message to CEO agent
+   - Doesn't wait for response (truly async)
+   - CEO agent immediately starts orchestrating
+
+4. **Streaming Real-time Events** (`GET /event` - Server-Sent Events)
+   - Subscribes to OpenCode event stream
+   - Receives updates in real-time:
+     - `message.created` - New agent message
+     - `message.part.delta` - Streaming text chunks
+     - `file.changed` - File created/modified/deleted
+     - `tool.call` - Tool invocations (delegate, webfetch, etc.)
+   - Formats and displays events in terminal
+
+**Result**: Fully autonomous operation with complete visibility!
+
+**Re-orchestration Flow**:
 ```
-[2026-01-23 14:30:22]
-Q: Which component should I implement first?
-A: Start with the most foundational and critical component that other parts depend on. Follow the natural dependency order.
-
-[2026-01-23 14:35:18]
-Q: Should I implement authentication using JWT or sessions?
-A: Use the technology that best matches our requirements, has strong community support, and aligns with modern best practices. Research if needed using webfetch.
+Error detected → User edits USER_INPUT.md → Ctrl+C to stop
+  ↓
+you.exe --orchestrate
+  ↓
+New session created → Fresh start → New goal ID
+  ↓
+Previous session preserved in .you/goals/{old-goal-id}/
 ```
 
 ### Agent Communication
 
-Agents use OpenCode's **Task tool** to delegate work:
+Agents use OpenCode's **delegate tool** to pass work:
 
 ```
 @ceo → invokes → @product-manager
@@ -400,25 +466,27 @@ Agents follow a "never stop until complete" protocol:
 ## Limitations & Roadmap
 
 ### Current Limitations
-- Agents communicate via manual Task tool invocation (not fully automated)
+- One orchestration at a time (single OpenCode server instance)
 - No automatic retry on OpenCode rate limits
-- No persistent chat history between orchestration runs
-- Limited error recovery
+- Terminal-only interface (no web UI)
+- Fixed port 4096 for OpenCode server
 
 ### Roadmap (v0.2.0)
-- [ ] Automatic agent-to-agent handoffs
-- [ ] Smart retry logic for rate limits
-- [ ] Web UI for monitoring workflow progress
-- [ ] Support for multiple concurrent goals
+- [ ] Multi-project concurrent orchestration (multiple OpenCode servers on different ports)
+- [ ] Smart retry logic for rate limits with exponential backoff
+- [ ] Web UI dashboard for monitoring workflow progress
+- [ ] Health check polling instead of fixed sleep on server startup
+- [ ] Event filtering and customization (filter by agent, file type, etc.)
 - [ ] Integration with GitHub/GitLab for issue tracking
 - [ ] Cost tracking and budget limits
-- [ ] Agent performance metrics
+- [ ] Agent performance metrics and analytics
 
 ### Future Ideas
 - [ ] Custom agent creation via CLI
-- [ ] Multi-project orchestration
-- [ ] Human-in-the-loop decision points
+- [ ] Human-in-the-loop approval system for dangerous operations
+- [ ] Resume orchestration from checkpoints
 - [ ] Agent skill learning and improvement
+- [ ] VS Code extension for orchestrator control
 
 ---
 

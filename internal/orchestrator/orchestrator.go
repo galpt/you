@@ -2,13 +2,18 @@ package orchestrator
 
 import (
 	"bufio"
+	"bytes"
+	"context"
+	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path/filepath"
-	"regexp"
 	"strings"
+	"syscall"
 	"time"
 	"you/internal/agents"
 	"you/internal/models"
@@ -434,243 +439,240 @@ func (o *Orchestrator) Orchestrate() error {
 	return nil
 }
 
-// launchOpenCodeWithCEO launches OpenCode with the CEO agent and intelligent auto-response
+// launchOpenCodeWithCEO launches OpenCode server and orchestrates via HTTP API
 func (o *Orchestrator) launchOpenCodeWithCEO() error {
-	// Prepare the prompt for the CEO agent
-	prompt := "Read USER_INPUT.md and orchestrate the team to build this project. " +
-		"Follow the workflow phases defined in ORCHESTRATION_GUIDE.md. " +
-		"Start by delegating to @product-manager to create a comprehensive PRD."
-
-	// Create decision log file
-	decisionLog := filepath.Join(o.projectPath, ".you", "decisions.log")
-	logFile, err := os.OpenFile(decisionLog, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
-	if err != nil {
-		return fmt.Errorf("failed to create decision log: %w", err)
+	// Start OpenCode server in background
+	serverCmd := exec.Command("opencode", "serve", "--port", "4096")
+	serverCmd.Dir = o.projectPath
+	
+	// Don't connect stdin (headless server), but show server logs
+	serverCmd.Stdout = os.Stdout
+	serverCmd.Stderr = os.Stderr
+	
+	fmt.Println("🔧 Starting OpenCode server...")
+	if err := serverCmd.Start(); err != nil {
+		return fmt.Errorf("failed to start opencode server: %w", err)
 	}
-	defer logFile.Close()
-
-	logDecision := func(question, response string) {
-		timestamp := time.Now().Format("2006-01-02 15:04:05")
-		entry := fmt.Sprintf("[%s]\nQ: %s\nA: %s\n\n", timestamp, question, response)
-		logFile.WriteString(entry)
-		fmt.Printf("\n🤖 Auto-Response: %s\n", response)
-	}
-
-	// Use exec.Command to run OpenCode
-	// Note: opencode run expects the message as a positional argument
-	// The working directory is set via cmd.Dir, not a --dir flag
-	cmd := exec.Command("opencode", "run",
-		"--agent", "ceo",
-		prompt, // Message as positional argument
-	)
-
-	// Set working directory (this is where opencode will run)
-	cmd.Dir = o.projectPath
-
-	// Create pipes for stdin/stdout to intercept and auto-respond
-	stdinPipe, err := cmd.StdinPipe()
-	if err != nil {
-		return fmt.Errorf("failed to create stdin pipe: %w", err)
-	}
-
-	stdoutPipe, err := cmd.StdoutPipe()
-	if err != nil {
-		return fmt.Errorf("failed to create stdout pipe: %w", err)
-	}
-
-	stderrPipe, err := cmd.StderrPipe()
-	if err != nil {
-		return fmt.Errorf("failed to create stderr pipe: %w", err)
-	}
-
-	// Start OpenCode process
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to start opencode: %w", err)
-	}
-
-	// Create channels for output handling
-	done := make(chan error)
-	needsResponse := make(chan string, 10)
-
-	// Monitor stdout for questions and auto-respond
-	go func() {
-		scanner := bufio.NewScanner(stdoutPipe)
-		var recentOutput strings.Builder
-
-		for scanner.Scan() {
-			line := scanner.Text()
-			fmt.Println(line) // Pass through to terminal
-
-			// Accumulate recent output for context
-			recentOutput.WriteString(line + "\n")
-			if recentOutput.Len() > 2000 {
-				// Keep only last ~2000 chars
-				output := recentOutput.String()
-				recentOutput.Reset()
-				recentOutput.WriteString(output[len(output)-2000:])
-			}
-
-			// Detect questions or decision points
-			if o.isQuestionOrDecisionPoint(line) {
-				needsResponse <- recentOutput.String()
-			}
+	
+	// Store server process for cleanup
+	defer func() {
+		if serverCmd.Process != nil {
+			fmt.Println("\n🛑 Stopping OpenCode server...")
+			serverCmd.Process.Kill()
 		}
 	}()
-
-	// Monitor stderr (pass through)
-	go func() {
-		scanner := bufio.NewScanner(stderrPipe)
-		for scanner.Scan() {
-			fmt.Fprintln(os.Stderr, scanner.Text())
-		}
-	}()
-
-	// Handle auto-responses
-	go func() {
-		for context := range needsResponse {
-			response := o.generateAutoResponse(context)
-			logDecision(o.extractQuestion(context), response)
-
-			// Send response to OpenCode
-			io.WriteString(stdinPipe, response+"\n")
-		}
-	}()
-
-	// Wait for completion
-	go func() {
-		done <- cmd.Wait()
-	}()
-
-	// Wait for process to complete
-	err = <-done
-	close(needsResponse)
-
-	if err != nil {
-		return fmt.Errorf("opencode process failed: %w", err)
+	
+	// Wait for server to be ready
+	time.Sleep(2 * time.Second)
+	
+	// Orchestrate via HTTP API
+	if err := o.orchestrateViaAPI("http://localhost:4096"); err != nil {
+		return err
 	}
-
-	fmt.Println("\n✅ OpenCode session completed!")
-	fmt.Printf("📊 Decision log: %s\n", decisionLog)
+	
 	return nil
 }
 
-// isQuestionOrDecisionPoint detects if output contains a question or requires decision
-func (o *Orchestrator) isQuestionOrDecisionPoint(line string) bool {
-	line = strings.ToLower(line)
-
-	// Pattern matching for questions and decision points
-	patterns := []string{
-		`\?$`,                           // Ends with question mark
-		`which one`,                     // Choice questions
-		`should i`,                      // Permission questions
-		`do you want`,                   // Preference questions
-		`would you like`,                // Polite questions
-		`please (choose|select|decide)`, // Decision requests
-		`confirm`,                       // Confirmation requests
-		`clarify|clarification`,         // Clarification needs
-		`(option|choice) [a-z]`,         // Multiple choice
+// orchestrateViaAPI orchestrates the project using OpenCode HTTP API
+func (o *Orchestrator) orchestrateViaAPI(baseURL string) error {
+	client := &http.Client{Timeout: 30 * time.Second}
+	
+	// 1. Create a new session
+	fmt.Println("📝 Creating orchestration session...")
+	sessionID, err := o.createSession(client, baseURL)
+	if err != nil {
+		return fmt.Errorf("failed to create session: %w", err)
 	}
-
-	for _, pattern := range patterns {
-		matched, _ := regexp.MatchString(pattern, line)
-		if matched {
-			return true
+	fmt.Printf("✓ Session created: %s\n\n", sessionID)
+	
+	// 2. Start event stream in background to show real-time progress
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	
+	eventsDone := make(chan error, 1)
+	go func() {
+		eventsDone <- o.streamEvents(ctx, baseURL)
+	}()
+	
+	// 3. Send initial prompt to CEO agent (async, doesn't wait for response)
+	prompt := "Read USER_INPUT.md and orchestrate the team to build this project. Follow the workflow phases defined in ORCHESTRATION_GUIDE.md. Start by delegating to @product-manager to create a comprehensive PRD."
+	
+	fmt.Println("🎭 Sending initial prompt to CEO agent...")
+	if err := o.sendPromptAsync(client, baseURL, sessionID, "ceo", prompt); err != nil {
+		return fmt.Errorf("failed to send prompt: %w", err)
+	}
+	fmt.Println("✓ CEO agent is now orchestrating the team!")
+	fmt.Println()
+	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	fmt.Println("📡 Streaming real-time events (press Ctrl+C to stop):")
+	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	fmt.Println()
+	
+	// 4. Wait for events or user interruption
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	
+	select {
+	case <-sigChan:
+		fmt.Println("\n\n⚠️  Received interrupt signal...")
+		cancel()
+	case err := <-eventsDone:
+		if err != nil && err != context.Canceled {
+			return fmt.Errorf("event stream error: %w", err)
 		}
 	}
-
-	return false
+	
+	fmt.Println("\n✅ Orchestration completed!")
+	return nil
 }
 
-// extractQuestion extracts the actual question from context
-func (o *Orchestrator) extractQuestion(context string) string {
-	lines := strings.Split(context, "\n")
-
-	// Find the last line with a question mark or decision keyword
-	for i := len(lines) - 1; i >= 0 && i >= len(lines)-10; i-- {
-		line := strings.TrimSpace(lines[i])
-		if strings.Contains(line, "?") ||
-			strings.Contains(strings.ToLower(line), "which") ||
-			strings.Contains(strings.ToLower(line), "should") {
-			return line
-		}
+// createSession creates a new OpenCode session via HTTP API
+func (o *Orchestrator) createSession(client *http.Client, baseURL string) (string, error) {
+	reqBody := map[string]interface{}{
+		"title": "You Orchestrator - Autonomous Build",
 	}
-
-	// Return last non-empty line
-	for i := len(lines) - 1; i >= 0; i-- {
-		if line := strings.TrimSpace(lines[i]); line != "" {
-			return line
-		}
+	
+	jsonBody, _ := json.Marshal(reqBody)
+	resp, err := client.Post(baseURL+"/session", "application/json", bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return "", err
 	}
-
-	return "Decision point"
+	defer resp.Body.Close()
+	
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+	}
+	
+	var session struct {
+		ID string `json:"id"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&session); err != nil {
+		return "", err
+	}
+	
+	return session.ID, nil
 }
 
-// generateAutoResponse creates intelligent CEO-level responses
-func (o *Orchestrator) generateAutoResponse(context string) string {
-	contextLower := strings.ToLower(context)
-
-	// Priority/sequencing questions
-	if strings.Contains(contextLower, "which one") &&
-		(strings.Contains(contextLower, "first") || strings.Contains(contextLower, "start")) {
-		return "Start with the most foundational and critical component that other parts depend on. Follow the natural dependency order."
+// sendPromptAsync sends a prompt to an agent asynchronously (doesn't wait for response)
+func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, agent, message string) error {
+	reqBody := map[string]interface{}{
+		"agent": agent,
+		"parts": []map[string]interface{}{
+			{
+				"type": "text",
+				"text": message,
+			},
+		},
 	}
-
-	// Technical choice questions
-	if strings.Contains(contextLower, "should i use") || strings.Contains(contextLower, "which technology") {
-		return "Use the technology that best matches our requirements, has strong community support, and aligns with modern best practices. Research if needed using webfetch."
+	
+	jsonBody, _ := json.Marshal(reqBody)
+	url := fmt.Sprintf("%s/session/%s/prompt_async", baseURL, sessionID)
+	
+	resp, err := client.Post(url, "application/json", bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return err
 	}
-
-	// Architecture decisions
-	if strings.Contains(contextLower, "architecture") || strings.Contains(contextLower, "design pattern") {
-		return "Follow SOLID principles, keep it simple and maintainable. Prefer proven patterns over experimental approaches."
+	defer resp.Body.Close()
+	
+	if resp.StatusCode != http.StatusNoContent {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
 	}
+	
+	return nil
+}
 
-	// Testing questions
-	if strings.Contains(contextLower, "test") && strings.Contains(contextLower, "should") {
-		return "Yes, implement comprehensive tests. Prioritize: unit tests for business logic, integration tests for critical paths, and E2E for user workflows."
+// streamEvents connects to the SSE event stream and displays events in real-time
+func (o *Orchestrator) streamEvents(ctx context.Context, baseURL string) error {
+	req, err := http.NewRequestWithContext(ctx, "GET", baseURL+"/event", nil)
+	if err != nil {
+		return err
 	}
-
-	// Documentation questions
-	if strings.Contains(contextLower, "document") && strings.Contains(contextLower, "should") {
-		return "Yes, document all public APIs, architecture decisions, and setup instructions. Keep documentation close to the code."
+	req.Header.Set("Accept", "text/event-stream")
+	
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
 	}
-
-	// Security questions
-	if strings.Contains(contextLower, "security") || strings.Contains(contextLower, "encrypt") {
-		return "Always prioritize security. Use industry-standard practices, never roll your own crypto, and follow the principle of least privilege."
+	defer resp.Body.Close()
+	
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
 	}
-
-	// Performance questions
-	if strings.Contains(contextLower, "optim") || strings.Contains(contextLower, "performance") {
-		return "Optimize for readability first, then measure before optimizing for performance. Focus on algorithmic improvements over micro-optimizations."
-	}
-
-	// Multiple options (A/B/C)
-	if regexp.MustCompile(`option [a-c]|choice [a-c]`).MatchString(contextLower) {
-		// Extract options and choose the most comprehensive one
-		if strings.Contains(contextLower, "comprehensive") || strings.Contains(contextLower, "complete") {
-			return "Choose the most comprehensive option that delivers maximum value."
+	
+	scanner := bufio.NewScanner(resp.Body)
+	for scanner.Scan() {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		default:
+			line := scanner.Text()
+			
+			// SSE format: "data: {json}"
+			if strings.HasPrefix(line, "data: ") {
+				eventData := strings.TrimPrefix(line, "data: ")
+				
+				// Pretty print event data
+				var event map[string]interface{}
+				if err := json.Unmarshal([]byte(eventData), &event); err == nil {
+					o.displayEvent(event)
+				} else {
+					// Fallback: just print the raw data
+					fmt.Println(eventData)
+				}
+			}
 		}
-		return "Option A - proceed with the first viable approach and iterate if needed."
 	}
-
-	// Confirmation requests
-	if strings.Contains(contextLower, "confirm") || strings.Contains(contextLower, "proceed") {
-		return "Yes, proceed. Make progress and we can iterate based on results."
+	
+	if err := scanner.Err(); err != nil {
+		return err
 	}
+	
+	return nil
+}
 
-	// Clarification requests
-	if strings.Contains(contextLower, "clarify") || strings.Contains(contextLower, "unclear") {
-		return "Make a reasonable assumption based on best practices and industry standards. Document your assumption and proceed."
+// displayEvent formats and displays an event from the SSE stream
+func (o *Orchestrator) displayEvent(event map[string]interface{}) {
+	eventType, _ := event["type"].(string)
+	
+	switch eventType {
+	case "message.created":
+		if role, ok := event["role"].(string); ok {
+			agent := event["agent"]
+			fmt.Printf("💬 [%s] %v\n", role, agent)
+		}
+	
+	case "message.part.start":
+		if partType, ok := event["partType"].(string); ok {
+			fmt.Printf("   ⚙️  %s...\n", partType)
+		}
+	
+	case "message.part.delta":
+		if delta, ok := event["delta"].(map[string]interface{}); ok {
+			if text, ok := delta["text"].(string); ok && text != "" {
+				fmt.Print(text)
+			}
+		}
+	
+	case "file.changed":
+		if path, ok := event["path"].(string); ok {
+			changeType, _ := event["changeType"].(string)
+			fmt.Printf("   📄 %s: %s\n", changeType, path)
+		}
+	
+	case "tool.call":
+		if tool, ok := event["tool"].(string); ok {
+			fmt.Printf("   🔧 Tool: %s\n", tool)
+		}
+	
+	default:
+		// For debugging: show unknown events
+		// jsonBytes, _ := json.MarshalIndent(event, "", "  ")
+		// fmt.Printf("🔔 %s\n", string(jsonBytes))
 	}
-
-	// Error handling questions
-	if strings.Contains(contextLower, "error") && strings.Contains(contextLower, "handle") {
-		return "Implement graceful error handling with clear error messages. Log errors appropriately and fail fast for unrecoverable errors."
-	}
-
-	// Default intelligent response
-	return "Use your professional judgment and industry best practices. Make the decision that delivers the most value while maintaining code quality and maintainability."
 }
 
 // readUserInput reads and returns the content of USER_INPUT.md

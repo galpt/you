@@ -82,7 +82,7 @@ Build a REST API for a blog platform with the following features:
 - README with setup instructions
 ```
 
-## Step 4: Start Orchestration
+## Step 4: Start Autonomous Orchestration
 
 ```bash
 # Windows:
@@ -91,41 +91,78 @@ you.exe --orchestrate
 you --orchestrate
 ```
 
-This will:
-- Create a Goal from your USER_INPUT.md
-- Initialize workflow state in `.you/workflows/`
-- Generate `ORCHESTRATION_GUIDE.md`
-- **Automatically launch OpenCode with the CEO agent**
-- **Auto-respond to all agent questions** - no manual prompting needed!
+**What happens (fully automated):**
+1. Creates a Goal from your USER_INPUT.md
+2. Initializes workflow state in `.you/workflows/`
+3. Generates `ORCHESTRATION_GUIDE.md`
+4. **Starts OpenCode HTTP server in background** (`opencode serve --port 4096`)
+5. **Creates HTTP session** for this orchestration
+6. **Sends initial prompt to CEO agent** (async, no waiting!)
+7. **Streams all agent activity in real-time** to your terminal
 
-The entire AI software company runs autonomously. When agents ask questions like "Which feature first?" or "Should I add tests?", the system provides intelligent CEO-level responses automatically. Check `.you/decisions.log` for the decision audit trail.
+**Real-time output example:**
+```
+🔧 Starting OpenCode server...
+📝 Creating orchestration session...
+✓ Session created: abc123
 
-## Step 5: Run OpenCode
+🎭 Sending initial prompt to CEO agent...
+✓ CEO agent is now orchestrating the team!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📡 Streaming real-time events (press Ctrl+C to stop):
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💬 [assistant] ceo
+   ⚙️  text...
+Reading USER_INPUT.md... Delegating to @product-manager...
+   📄 created: requirements/PRD.md
+💬 [assistant] product-manager
+   Creating comprehensive PRD...
+   🔧 Tool: webfetch (researching best practices)
+   📄 modified: requirements/PRD.md
+   🔧 Tool: delegate (to @product-designer)
+...
+```
+
+**Fully autonomous** - no human interaction needed! Press `Ctrl+C` anytime to stop.
+
+## Step 5: Re-orchestration (if needed)
+
+If something goes wrong or requirements change:
 
 ```bash
-opencode
+# 1. Stop current session (Ctrl+C)
+# 2. Edit USER_INPUT.md with updated requirements
+# 3. Re-run orchestration
+you.exe --orchestrate
 ```
 
-In OpenCode, invoke the CEO agent:
-
-```
-@ceo Read USER_INPUT.md and orchestrate the team to build this project.
-```
+**What happens:**
+- Creates new goal with fresh session ID
+- Starts new OpenCode server
+- CEO agent receives updated requirements
+- Builds from scratch with corrected specs
+- Previous attempt preserved in `.you/goals/{old-id}/`
 
 ## What Happens Next?
 
-The CEO agent will:
-1. Read your requirements
-2. Delegate to `@product-manager` to create a PRD
-3. PM delegates to `@product-designer` for UX
-4. Designer delegates to `@solution-architect` for architecture
+The orchestration runs **completely autonomously**:
+
+1. CEO agent reads requirements and creates project plan
+2. Delegates to `@product-manager` to create comprehensive PRD
+3. PM delegates to `@product-designer` for UX design
+4. Designer delegates to `@solution-architect` for system architecture
 5. Architect delegates to `@lead-engineer` for task breakdown
-6. Lead assigns tasks to `@software-engineer` agents
-7. `@qa-engineer` validates the implementation
-8. `@security-engineer` performs security audit
-9. `@devops-sre` sets up deployment
-10. `@technical-writer` creates documentation
-11. CEO reviews and approves
+6. Lead Engineer delegates to `@software-engineer` for implementation
+7. Software Engineer uses `webfetch` to research best practices
+8. `@qa-engineer` validates implementation with comprehensive tests
+9. `@security-engineer` performs security audit
+10. `@devops-sre` sets up deployment pipeline
+11. `@technical-writer` creates documentation
+12. CEO reviews and approves final deliverable
+
+**All delegation happens automatically** - you just watch the stream!
 
 ## Monitoring Progress
 
@@ -138,13 +175,15 @@ ls -la .you/artifacts/
 # Check workflow state
 cat .you/workflows/state_<goal-id>.json
 
-# View tasks
-ls -la .you/tasks/
+# View goals and their sessions
+ls -la .you/goals/
 ```
+
+**Real-time monitoring:** Just watch the terminal! All file operations, agent conversations, and tool calls stream live.
 
 ## Example Workflow
 
-Here's a real example:
+Here's a complete example:
 
 ```bash
 # 1. Setup
@@ -152,19 +191,24 @@ mkdir task-manager-app
 cd task-manager-app
 you --presets
 
-# 2. Edit USER_INPUT.md
-echo "Build a task manager web app with Next.js and Tailwind" > USER_INPUT.md
+# 2. Edit USER_INPUT.md with requirements
+# (Open in your editor and write detailed project specs)
 
-# 3. Orchestrate
+# 3. Start autonomous orchestration
 you --orchestrate
 
-# 4. Start OpenCode
-opencode
-
-# 5. In OpenCode chat:
-@ceo Read USER_INPUT.md and build this project. 
-Make sure to follow all workflow phases and create high-quality code.
+# That's it! Watch the magic happen in real-time:
+# - CEO agent reads requirements
+# - PM creates PRD
+# - Designer creates UI mockups
+# - Architect designs system
+# - Engineers implement features
+# - QA tests everything
+# - DevOps sets up deployment
+# - Tech Writer documents it all
 ```
+
+**No manual OpenCode interaction needed!** The entire workflow is automated via HTTP API.
 
 ## Tips for Success
 
@@ -185,76 +229,70 @@ Specify your preferred:
 - "API documentation complete"
 - "Deployed to staging"
 
-### 4. Monitor the .you/ Directory
-- Check artifacts as they're created
-- Review task progress
-- Verify workflow state
-- **Check `.you/decisions.log`** to see all automated decisions
+### 4. Monitor the Real-time Stream
+Watch the terminal output to see:
+- Agent conversations and decisions
+- Files being created/modified
+- Tool invocations (webfetch, delegate, etc.)
+- Progress through workflow phases
 
-### 5. Iterate with Agents (If Needed)
-The system is fully autonomous, but you can intervene if needed:
-```
-@lead-engineer The authentication approach in the architecture seems overcomplicated.
-Can we simplify it to use JWT instead of sessions?
-```
-
-## Autonomous Decision-Making
-
-**You** handles all agent questions automatically:
-
-```
-[Agent]: "Which component should I build first - auth or database layer?"
-[Auto-Response]: "Start with the database layer as authentication depends on it."
-
-[Agent]: "Should I add input validation?"  
-[Auto-Response]: "Yes, implement comprehensive input validation for security."
-
-[Agent]: "Which testing framework - testify or standard testing?"
-[Auto-Response]: "Use technology with strong community support and best practices. Research using webfetch."
+### 5. Intervene if Needed (Optional)
+The system is fully autonomous, but you can stop and restart:
+```bash
+# Press Ctrl+C to stop
+# Edit USER_INPUT.md with changes
+you --orchestrate  # Starts fresh with new requirements
 ```
 
-All decisions appear in your terminal with a 🤖 prefix and are logged to `.you/decisions.log`.
+## How Agents Make Decisions Autonomously
+
+Agents are configured to be **self-sufficient** through:
+
+1. **Smart System Prompts**: Instructed to make reasonable decisions based on best practices
+2. **webfetch Tool**: Can research current best practices and documentation
+3. **delegate Tool**: Can ask other specialist agents for expertise
+4. **Best Practice Guidelines**: Configured with SOLID principles, security-first mindset
+
+**Example autonomous decisions:**
+- "Should I use React or Vue?" → Agent uses webfetch to research, picks based on community support
+- "Which database schema?" → Follows normalization principles and SOLID design
+- "Add tests?" → Yes, implements comprehensive test coverage (best practice)
+- "Authentication approach?" → JWT with industry-standard security practices
+
+**No human intervention required!**
 
 ## Troubleshooting
 
-### Agent doesn't respond
-- Check OpenCode API key configuration
-- Verify agent files in `.opencode/agents/` exist
-- Check `.opencode/opencode.json` syntax
+### OpenCode server fails to start
+- Verify OpenCode is installed: `opencode --version`
+- Check port 4096 is available
+- Try manually: `opencode serve --port 4096`
+
+### No events streaming
+- Check terminal output for error messages
+- Verify USER_INPUT.md is not empty
+- Ensure `.opencode/` directory was created by `--presets`
 
 ### Wrong tech stack chosen
-- Be more specific in USER_INPUT.md
-- Tell the `@solution-architect` directly:
-  ```
-  @solution-architect Please use Go with Gin framework, not Node.js
-  ```
+- Be more specific in USER_INPUT.md about technical preferences
+- Include preferred languages, frameworks, and tools
+- Specify architectural patterns if needed
 
-### Tasks not being completed
-- Check `.you/tasks/` for task status
-- Ask `@lead-engineer` for status:
-  ```
-  @lead-engineer What's the status of all tasks?
-  ```
-
-### Build fails
-- Make sure Go 1.21+ is installed
-- Run `go mod download` to fetch dependencies
-- Check for syntax errors: `go vet ./...`
+### Want to restart orchestration
+```bash
+Ctrl+C  # Stop current session
+# Edit USER_INPUT.md if needed
+you --orchestrate  # Fresh start with new session
+```
 
 ## Next Steps
 
-- Read the full [README.md](README.md)
-- Check [ORCHESTRATION_GUIDE.md](ORCHESTRATION_GUIDE.md) in your project
-- Explore agent prompts in `.opencode/agents/`
+- Read the full [README.md](README.md) for comprehensive documentation
+- Check [TECHNICAL_DETAILS.md](TECHNICAL_DETAILS.md) for HTTP API architecture deep dive
+- Review [IMPLEMENTATION.md](IMPLEMENTATION.md) for codebase overview
+- Explore agent prompts in `.opencode/agents/` to understand autonomous behavior
 - Join the community (Discord/GitHub discussions)
-
-## Need Help?
-
-- 📖 Documentation: See [README.md](README.md)
-- 🐛 Issues: https://github.com/galpt/you/issues
-- 💬 Discord: [Coming soon]
-- 📧 Email: galpt@v.recipes
 
 ---
 
-**Happy orchestrating! Let the AI agents do the heavy lifting.** 🚀
+**Happy orchestrating! Watch AI agents build your software autonomously.** 🚀
