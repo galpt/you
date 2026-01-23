@@ -464,11 +464,31 @@ func (o *Orchestrator) launchOpenCodeWithCEO() error {
 		}
 	}()
 	
-	// Wait for server to be ready
-	time.Sleep(2 * time.Second)
+	// Wait for server to be ready with health check
+	baseURL := "http://localhost:4096"
+	fmt.Println("⏳ Waiting for OpenCode server to be ready...")
+	time.Sleep(5 * time.Second) // Initial wait
+	
+	// Verify server is responding
+	healthClient := &http.Client{Timeout: 5 * time.Second}
+	for i := 0; i < 6; i++ { // Try for up to 30 more seconds (6 * 5 = 30)
+		resp, err := healthClient.Get(baseURL + "/")
+		if err == nil {
+			resp.Body.Close()
+			if resp.StatusCode == http.StatusOK {
+				fmt.Println("✓ OpenCode server is ready!")
+				break
+			}
+		}
+		if i < 5 {
+			time.Sleep(5 * time.Second)
+		} else {
+			return fmt.Errorf("opencode server did not become healthy after 35 seconds")
+		}
+	}
 	
 	// Orchestrate via HTTP API
-	if err := o.orchestrateViaAPI("http://localhost:4096"); err != nil {
+	if err := o.orchestrateViaAPI(baseURL); err != nil {
 		return err
 	}
 	
@@ -477,7 +497,8 @@ func (o *Orchestrator) launchOpenCodeWithCEO() error {
 
 // orchestrateViaAPI orchestrates the project using OpenCode HTTP API
 func (o *Orchestrator) orchestrateViaAPI(baseURL string) error {
-	client := &http.Client{Timeout: 30 * time.Second}
+	// No timeout - let the orchestration run as long as needed
+	client := &http.Client{}
 	
 	// 1. Create a new session
 	fmt.Println("📝 Creating orchestration session...")
@@ -496,14 +517,26 @@ func (o *Orchestrator) orchestrateViaAPI(baseURL string) error {
 		eventsDone <- o.streamEvents(ctx, baseURL)
 	}()
 	
-	// 3. Send initial prompt to CEO agent (async, doesn't wait for response)
+	// Give event stream a moment to connect
+	time.Sleep(500 * time.Millisecond)
+	
+	// 3. Send initial prompt to CEO agent in background (fire and forget)
 	prompt := "Read USER_INPUT.md and orchestrate the team to build this project. Follow the workflow phases defined in ORCHESTRATION_GUIDE.md. Start by delegating to @product-manager to create a comprehensive PRD."
 	
 	fmt.Println("🎭 Sending initial message to session...")
-	if err := o.sendPromptAsync(client, baseURL, sessionID, prompt); err != nil {
-		return fmt.Errorf("failed to send message: %w", err)
-	}
-	fmt.Println("✓ Message sent! CEO agent will receive it and start orchestrating.")
+	
+	// Send message in goroutine - don't wait for response
+	// The event stream will show all the activity
+	go func() {
+		// Use a client with reasonable timeout for the HTTP request itself (not AI processing)
+		sendClient := &http.Client{Timeout: 30 * time.Second}
+		if err := o.sendPromptAsync(sendClient, baseURL, sessionID, prompt); err != nil {
+			fmt.Printf("\n⚠️  Warning: Failed to send message: %v\n", err)
+			fmt.Println("   But event stream is still running - check for activity")
+		}
+	}()
+	
+	fmt.Println("✓ Message queued! CEO agent will receive it and start orchestrating.")
 	fmt.Println()
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	fmt.Println("📡 Streaming real-time events (press Ctrl+C to stop):")
@@ -559,15 +592,16 @@ func (o *Orchestrator) createSession(client *http.Client, baseURL string) (strin
 // sendPromptAsync sends a message to the session
 // OpenCode routes messages to primary agents automatically
 func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, message string) error {
-	// Generate UUIDs for message and part
-	messageID := uuid.New().String()
-	partID := uuid.New().String()
+	// Generate IDs with proper prefixes (OpenCode requirement)
+	// messageID must start with "msg" (like sessionID starts with "ses")
+	messageID := "msg_" + uuid.New().String()
+	partID := "prt_" + uuid.New().String()
 	
 	// OpenCode message format (from opencode-web reference implementation)
 	reqBody := map[string]interface{}{
 		"messageID":  messageID,
 		"providerID": "github-copilot",
-		"modelID":    "github-copilot/gpt-5-mini",
+		"modelID":    "github-copilot/gpt-5-mini", // Fixed typo: was githhub
 		"mode":       "build",
 		"parts": []map[string]interface{}{
 			{
