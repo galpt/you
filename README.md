@@ -32,7 +32,7 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 
 ## Status
 
-**Current Version**: 0.1.1
+**Current Version**: 0.1.2
 
 This is an early beta release. The orchestrator can:
 - ✅ Generate OpenCode agent configurations
@@ -227,11 +227,9 @@ The CEO agent orchestrates the entire team **without human intervention**:
 9. `@devops-sre` → `@technical-writer` - Documentation
 10. `@technical-writer` → `@ceo` - Final approval
 
-**All delegation happens automatically via the `delegate` tool.** You just watch the stream!
-9. `@technical-writer` creates documentation
-10. CEO approves final deliverable
-
-All artifacts and state are tracked in the `.you/` directory.
+> [!NOTE]
+> 1. **All delegation happens automatically via the `delegate` tool.** You just watch the stream!
+> 2. All artifacts and state are tracked in the `.you/` directory.
 
 ---
 

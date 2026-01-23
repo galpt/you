@@ -446,16 +446,16 @@ func (o *Orchestrator) launchOpenCodeWithCEO() error {
 	// Start OpenCode server in background
 	serverCmd := exec.Command("opencode", "serve", "--port", "4096")
 	serverCmd.Dir = o.projectPath
-	
+
 	// Don't connect stdin (headless server), but show server logs
 	serverCmd.Stdout = os.Stdout
 	serverCmd.Stderr = os.Stderr
-	
+
 	fmt.Println("🔧 Starting OpenCode server...")
 	if err := serverCmd.Start(); err != nil {
 		return fmt.Errorf("failed to start opencode server: %w", err)
 	}
-	
+
 	// Store server process for cleanup
 	defer func() {
 		if serverCmd.Process != nil {
@@ -463,12 +463,12 @@ func (o *Orchestrator) launchOpenCodeWithCEO() error {
 			serverCmd.Process.Kill()
 		}
 	}()
-	
+
 	// Wait for server to be ready with health check
 	baseURL := "http://localhost:4096"
 	fmt.Println("⏳ Waiting for OpenCode server to be ready...")
 	time.Sleep(5 * time.Second) // Initial wait
-	
+
 	// Verify server is responding
 	healthClient := &http.Client{Timeout: 5 * time.Second}
 	for i := 0; i < 6; i++ { // Try for up to 30 more seconds (6 * 5 = 30)
@@ -486,12 +486,12 @@ func (o *Orchestrator) launchOpenCodeWithCEO() error {
 			return fmt.Errorf("opencode server did not become healthy after 35 seconds")
 		}
 	}
-	
+
 	// Orchestrate via HTTP API
 	if err := o.orchestrateViaAPI(baseURL); err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 
@@ -499,7 +499,7 @@ func (o *Orchestrator) launchOpenCodeWithCEO() error {
 func (o *Orchestrator) orchestrateViaAPI(baseURL string) error {
 	// No timeout - let the orchestration run as long as needed
 	client := &http.Client{}
-	
+
 	// 1. Create a new session
 	fmt.Println("📝 Creating orchestration session...")
 	sessionID, err := o.createSession(client, baseURL)
@@ -507,24 +507,24 @@ func (o *Orchestrator) orchestrateViaAPI(baseURL string) error {
 		return fmt.Errorf("failed to create session: %w", err)
 	}
 	fmt.Printf("✓ Session created: %s\n\n", sessionID)
-	
+
 	// 2. Start event stream in background to show real-time progress
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	
+
 	eventsDone := make(chan error, 1)
 	go func() {
 		eventsDone <- o.streamEvents(ctx, baseURL)
 	}()
-	
+
 	// Give event stream a moment to connect
 	time.Sleep(500 * time.Millisecond)
-	
+
 	// 3. Send initial prompt to CEO agent in background (fire and forget)
 	prompt := "Read USER_INPUT.md and orchestrate the team to build this project. Follow the workflow phases defined in ORCHESTRATION_GUIDE.md. Start by delegating to @product-manager to create a comprehensive PRD."
-	
+
 	fmt.Println("🎭 Sending initial message to session...")
-	
+
 	// Send message in goroutine - don't wait for response
 	// The event stream will show all the activity
 	go func() {
@@ -535,18 +535,18 @@ func (o *Orchestrator) orchestrateViaAPI(baseURL string) error {
 			fmt.Println("   But event stream is still running - check for activity")
 		}
 	}()
-	
+
 	fmt.Println("✓ Message queued! CEO agent will receive it and start orchestrating.")
 	fmt.Println()
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	fmt.Println("📡 Streaming real-time events (press Ctrl+C to stop):")
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	fmt.Println()
-	
+
 	// 4. Wait for events or user interruption
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
-	
+
 	select {
 	case <-sigChan:
 		fmt.Println("\n\n⚠️  Received interrupt signal...")
@@ -556,7 +556,7 @@ func (o *Orchestrator) orchestrateViaAPI(baseURL string) error {
 			return fmt.Errorf("event stream error: %w", err)
 		}
 	}
-	
+
 	fmt.Println("\n✅ Orchestration completed!")
 	return nil
 }
@@ -566,26 +566,26 @@ func (o *Orchestrator) createSession(client *http.Client, baseURL string) (strin
 	reqBody := map[string]interface{}{
 		"title": "You Orchestrator - Autonomous Build",
 	}
-	
+
 	jsonBody, _ := json.Marshal(reqBody)
 	resp, err := client.Post(baseURL+"/session", "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return "", err
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		return "", fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
 	}
-	
+
 	var session struct {
 		ID string `json:"id"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&session); err != nil {
 		return "", err
 	}
-	
+
 	return session.ID, nil
 }
 
@@ -596,7 +596,7 @@ func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, 
 	// messageID must start with "msg" (like sessionID starts with "ses")
 	messageID := "msg_" + uuid.New().String()
 	partID := "prt_" + uuid.New().String()
-	
+
 	// OpenCode message format (from opencode-web reference implementation)
 	reqBody := map[string]interface{}{
 		"messageID":  messageID,
@@ -613,23 +613,23 @@ func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, 
 			},
 		},
 	}
-	
+
 	jsonBody, _ := json.Marshal(reqBody)
 	// Correct endpoint: /session/{id}/message NOT /prompt_async
 	url := fmt.Sprintf("%s/session/%s/message", baseURL, sessionID)
-	
+
 	resp, err := client.Post(url, "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	
+
 	// OpenCode /message returns 200 with the message response, not 204
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
 	}
-	
+
 	return nil
 }
 
@@ -640,31 +640,36 @@ func (o *Orchestrator) streamEvents(ctx context.Context, baseURL string) error {
 		return err
 	}
 	req.Header.Set("Accept", "text/event-stream")
-	
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	
+
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
 	}
-	
+
 	scanner := bufio.NewScanner(resp.Body)
+	// Increase buffer size to handle large events (default 64KB is too small)
+	const maxTokenSize = 10 * 1024 * 1024 // 10MB
+	buffer := make([]byte, maxTokenSize)
+	scanner.Buffer(buffer, maxTokenSize)
+
 	for scanner.Scan() {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
 			line := scanner.Text()
-			
+
 			// SSE format: "data: {json}"
 			if strings.HasPrefix(line, "data: ") {
 				eventData := strings.TrimPrefix(line, "data: ")
-				
+
 				// Pretty print event data
 				var event map[string]interface{}
 				if err := json.Unmarshal([]byte(eventData), &event); err == nil {
@@ -676,11 +681,11 @@ func (o *Orchestrator) streamEvents(ctx context.Context, baseURL string) error {
 			}
 		}
 	}
-	
+
 	if err := scanner.Err(); err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 
@@ -688,40 +693,46 @@ func (o *Orchestrator) streamEvents(ctx context.Context, baseURL string) error {
 func (o *Orchestrator) displayEvent(event map[string]interface{}) {
 	eventType, _ := event["type"].(string)
 	properties, _ := event["properties"].(map[string]interface{})
-	
+
 	switch eventType {
 	case "server.connected":
 		// Silent - just connected
 		return
-		
+
 	case "message.updated":
-		// New message created or updated
+		// Message metadata - show which agent is working
 		if info, ok := properties["info"].(map[string]interface{}); ok {
 			role, _ := info["role"].(string)
 			agent, _ := info["agent"].(string)
+
+			// Only show if we have meaningful info
 			if agent != "" {
-				fmt.Printf("\n💬 [%s] %s\n", role, agent)
+				emoji := "💬"
+				if role == "assistant" {
+					emoji = "🤖"
+				}
+				fmt.Printf("\n%s [%s] %s\n", emoji, role, agent)
 			}
 		}
-	
+
 	case "message.part.updated":
 		// Message part updated (tool call, text, etc.)
 		if part, ok := properties["part"].(map[string]interface{}); ok {
 			partType, _ := part["type"].(string)
-			
+
 			switch partType {
 			case "text":
 				// Streaming text delta
 				if delta, ok := properties["delta"].(string); ok && delta != "" {
 					fmt.Print(delta)
 				}
-				
+
 			case "tool":
 				// Tool call
 				tool, _ := part["tool"].(string)
 				state, _ := part["state"].(map[string]interface{})
 				status, _ := state["status"].(string)
-				
+
 				switch status {
 				case "running":
 					fmt.Printf("   🔧 Tool: %s (running...)\n", tool)
@@ -733,20 +744,20 @@ func (o *Orchestrator) displayEvent(event map[string]interface{}) {
 						fmt.Printf("   ✓ Tool %s completed\n", tool)
 					}
 				}
-				
+
 			case "agent":
 				// Agent delegation
 				agentName, _ := part["name"].(string)
 				fmt.Printf("   👤 Delegating to: @%s\n", agentName)
 			}
 		}
-	
+
 	case "file.edited":
 		// File was created or modified
 		if file, ok := properties["file"].(string); ok {
 			fmt.Printf("   📄 modified: %s\n", file)
 		}
-		
+
 	case "session.status":
 		// Session status change (idle, busy, retry)
 		if status, ok := properties["type"].(string); ok {
@@ -760,7 +771,7 @@ func (o *Orchestrator) displayEvent(event map[string]interface{}) {
 				fmt.Printf("\n⚠️  Retry: %s\n", message)
 			}
 		}
-		
+
 	default:
 		// For debugging: uncomment to see all events
 		// jsonBytes, _ := json.MarshalIndent(event, "", "  ")
@@ -878,9 +889,9 @@ The CEO will then automatically:
 
 All artifacts and state are tracked in the .you/ directory:
 - **.you/artifacts/**: All deliverables (PRDs, code, docs, test reports)
-- **.you/tasks/**: Individual task definitions and status
 - **.you/workflows/**: Goal and workflow state
-- **.you/communications/**: Agent-to-agent message logs
+
+**Note**: Task distribution and agent communication are managed internally by OpenCode.
 
 ## Agent Communication
 
@@ -897,12 +908,13 @@ Each agent has specific permissions defined in .opencode/opencode.json
 
 1. **Be Specific**: The more detail in USER_INPUT.md, the better the results
 2. **Monitor Artifacts**: Check .you/artifacts/ to see what's been created
+3. **Review Workflow**: Check .you/workflows/ for goal and session state
 3. **Iterate**: Agents can refine their work based on feedback
 4. **Trust the Process**: Let agents work through the phases systematically
 
 ## Troubleshooting
 
-- **Agent stuck?**: Check .you/workflows/ for current phase and blockers
+- **Agent stuck?**: Monitor the event stream for retry events and error messages
 - **Wrong output?**: Provide feedback and ask agent to iterate
 - **Missing dependencies?**: Ensure all agents are defined in .opencode/agents/
 

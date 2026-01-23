@@ -29,8 +29,6 @@ func NewSCR(basePath string) (*SCR, error) {
 func (s *SCR) initialize() error {
 	directories := []string{
 		filepath.Join(s.basePath, "artifacts"),
-		filepath.Join(s.basePath, "tasks"),
-		filepath.Join(s.basePath, "communications"),
 		filepath.Join(s.basePath, "workflows"),
 	}
 
