@@ -268,10 +268,11 @@ All artifacts are tracked in `.you/`:
 ```
 .you/
 ├── artifacts/       # PRDs, code, test reports, docs
-├── tasks/           # Individual task definitions
-├── workflows/       # Goals and workflow state
-└── communications/  # Agent-to-agent messages
+└── workflows/       # Goals and workflow state
 ```
+
+> [!NOTE]
+> Task distribution and agent communication are managed internally by OpenCode.
 
 ### Autonomous Orchestration via HTTP API
 
