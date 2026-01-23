@@ -268,10 +268,22 @@ Agents are configured to be **self-sufficient** through:
 - Check port 4096 is available
 - Try manually: `opencode serve --port 4096`
 
-### No events streaming
-- Check terminal output for error messages
-- Verify USER_INPUT.md is not empty
-- Ensure `.opencode/` directory was created by `--presets`
+### No events streaming / Stuck after "Streaming real-time events"
+**Most likely cause:** Using an older version with all agents as subagents.
+
+**Solution:** 
+- Re-run `you --presets` to regenerate agent configs (CEO is now a primary agent)
+- Or manually edit `.opencode/opencode.json` and `.opencode/agents/ceo.md`:
+  ```yaml
+  mode: primary  # Change from "subagent" to "primary"
+  ```
+
+**Why this matters:** OpenCode requires at least one primary agent to start the workflow. Subagents can only be invoked by primary agents via the Task tool.
+
+### No agent responses (messages sent but no replies)
+- Verify GitHub Copilot is connected: Run `opencode` TUI and check `/connect` status
+- Check if the model provider has API limits or authentication issues
+- Try using a different provider in `.opencode/opencode.json`
 
 ### Wrong tech stack chosen
 - Be more specific in USER_INPUT.md about technical preferences

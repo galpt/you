@@ -166,7 +166,7 @@ func (o *Orchestrator) createOpenCodeConfig() error {
   "agent": {
     "ceo": {
       "description": "Orchestrates the entire workflow, delegates to PM and reviews final output",
-      "mode": "subagent",
+      "mode": "primary",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.2,
       "tools": {

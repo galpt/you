@@ -356,18 +356,18 @@ you/
 
 ## Agent Roles
 
-| Agent | Role | Responsibilities |
-|-------|------|------------------|
-| **CEO** | Orchestrator | High-level decision making, delegates to PM, final approval |
-| **Product Manager** | Requirements | Creates PRDs, user stories, acceptance criteria |
-| **Product Designer** | UI/UX | User flows, design systems, component specifications |
-| **Solution Architect** | Architecture | Tech stack, data models, API design, system architecture |
-| **Lead Engineer** | Task Management | Breaks architecture into tasks, code review, releases |
-| **Software Engineer** | Implementation | Writes code, unit tests, implements features |
-| **QA Engineer** | Quality Assurance | Automated testing, validation, bug reporting |
-| **Security Engineer** | Security | Security audits, vulnerability scanning, compliance |
-| **DevOps/SRE** | Infrastructure | CI/CD, deployment, monitoring, observability |
-| **Technical Writer** | Documentation | READMEs, API docs, user guides, changelogs |
+| Agent | Role | Type | Responsibilities |
+|-------|------|------|------------------|
+| **CEO** | Orchestrator | **Primary** | High-level decision making, delegates to PM, final approval |
+| **Product Manager** | Requirements | Subagent | Creates PRDs, user stories, acceptance criteria |
+| **Product Designer** | UI/UX | Subagent | User flows, design systems, component specifications |
+| **Solution Architect** | Architecture | Subagent | Tech stack, data models, API design, system architecture |
+| **Lead Engineer** | Task Management | Subagent | Breaks architecture into tasks, code review, releases |
+| **Software Engineer** | Implementation | Subagent | Writes code, unit tests, implements features |
+| **QA Engineer** | Quality Assurance | Subagent | Automated testing, validation, bug reporting |
+| **Security Engineer** | Security | Subagent | Security audits, vulnerability scanning, compliance |
+| **DevOps/SRE** | Infrastructure | Subagent | CI/CD, deployment, monitoring, observability |
+| **Technical Writer** | Documentation | Subagent | READMEs, API docs, user guides, changelogs |
 
 **All agents have web browsing capabilities** to research documentation, verify latest library syntax, and prevent outdated implementations. Before writing code for external dependencies, agents automatically use `webfetch` to validate current best practices.
 

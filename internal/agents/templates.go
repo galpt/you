@@ -39,7 +39,7 @@ func getCEOAgentTemplate() AgentTemplate {
 		Name:        "ceo",
 		Role:        models.AgentRoleCEO,
 		Description: "Orchestrates the entire workflow, delegates to PM and reviews final output",
-		Mode:        "subagent",
+		Mode:        "primary",
 		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.2,
 		Tools: map[string]bool{
