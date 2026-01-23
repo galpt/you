@@ -437,10 +437,11 @@ func (o *Orchestrator) launchOpenCodeWithCEO() error {
 	}
 
 	// Use exec.Command to run OpenCode
+	// Note: opencode run expects the message as a positional argument, not --prompt
 	cmd := exec.Command("opencode", "run",
 		"--agent", "ceo",
-		"--prompt", prompt,
 		"--dir", o.projectPath,
+		prompt, // Message as positional argument
 	)
 
 	// Set working directory

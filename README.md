@@ -22,7 +22,7 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 - [Contributing](#contributing)
 - [License](#license)
 
-**📚 Additional Documentation:**
+## Additional Documentation
 - [AUTO-RESPONSE.md](AUTO-RESPONSE.md) - Detailed auto-response system documentation
 - [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture and data flow
 - [QUICKSTART.md](QUICKSTART.md) - 5-minute getting started guide
