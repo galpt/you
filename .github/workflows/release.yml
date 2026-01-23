@@ -1,0 +1,198 @@
+name: Build and Release
+
+on:
+  push:
+    branches:
+    - main
+    - master
+    tags:
+    - 'v*'
+  workflow_dispatch:
+
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+        - goos: windows
+          goarch: amd64
+          output: you.exe
+          asset_name: you-windows-amd64.zip
+        - goos: linux
+          goarch: amd64
+          output: you
+          asset_name: you-linux-amd64.tar.gz
+        - goos: darwin
+          goarch: amd64
+          output: you
+          asset_name: you-darwin-amd64.tar.gz
+        - goos: darwin
+          goarch: arm64
+          output: you
+          asset_name: you-darwin-arm64.tar.gz
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.21'
+
+    - name: Build executable
+      env:
+        GOOS: ${{ matrix.goos }}
+        GOARCH: ${{ matrix.goarch }}
+      run: |
+        go build -ldflags="-s -w" -o ${{ matrix.output }} .
+
+    - name: Create distribution package
+      run: |
+        mkdir -p dist
+
+        # Create package directory
+        PKG_DIR="you-${{ matrix.goos }}-${{ matrix.goarch }}"
+        mkdir -p "$PKG_DIR"
+
+        # Copy binary
+        cp ${{ matrix.output }} "$PKG_DIR/"
+
+        # Copy documentation
+        cp README.md "$PKG_DIR/"
+        cp LICENSE "$PKG_DIR/"
+        cp QUICKSTART.md "$PKG_DIR/"
+
+        # Create archive based on platform
+        if [ "${{ matrix.goos }}" = "windows" ]; then
+          zip -r "dist/${{ matrix.asset_name }}" "$PKG_DIR"
+        else
+          tar -czf "dist/${{ matrix.asset_name }}" "$PKG_DIR"
+        fi
+
+        # Display archive info
+        ls -lh "dist/${{ matrix.asset_name }}"
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.asset_name }}
+        path: dist/${{ matrix.asset_name }}
+        retention-days: 1
+
+  create-release:
+    needs: build-and-release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+
+    - name: Prepare release assets
+      run: |
+        mkdir -p release
+        find artifacts -type f -name "*.zip" -o -name "*.tar.gz" | while read file; do
+          cp "$file" release/
+        done
+        ls -lh release/
+
+    - name: Generate release tag
+      id: tag
+      run: |
+        if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+          # Use existing tag
+          TAG="${GITHUB_REF#refs/tags/}"
+        else
+          # Generate timestamp-based tag
+          TIMESTAMP=$(date -u +"%Y%m%d-%H%M%S")
+          TAG="release-${TIMESTAMP}"
+        fi
+        echo "tag=${TAG}" >> $GITHUB_OUTPUT
+        echo "timestamp=$(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_OUTPUT
+
+    - name: Calculate checksums
+      run: |
+        cd release
+        sha256sum * > SHA256SUMS.txt
+        cat SHA256SUMS.txt
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ steps.tag.outputs.tag }}
+        name: You Orchestrator ${{ steps.tag.outputs.tag }}
+        body: |
+          ## You - Agentic Orchestrator for OpenCode
+
+          **Automated build from commit: `${{ github.sha }}`**
+
+          ### 🚀 What's Included
+
+          - ✅ Cross-platform binaries (Windows, Linux, macOS Intel/ARM)
+          - ✅ 10 specialized AI agents (CEO, PM, Designer, Architect, Engineers, QA, Security, DevOps, Writer)
+          - ✅ Professional skills for software engineering workflows
+          - ✅ Web research capabilities via `webfetch` tool
+          - ✅ OpenCode integration with native agent system
+          - ✅ State management (Shared Certified Repository)
+          - ✅ Comprehensive documentation
+
+          ### 📦 Available Builds
+
+          | Platform | Architecture | File |
+          |----------|--------------|------|
+          | Windows | x64 | `you-windows-amd64.zip` |
+          | Linux | x64 | `you-linux-amd64.tar.gz` |
+          | macOS | Intel (x64) | `you-darwin-amd64.tar.gz` |
+          | macOS | Apple Silicon (ARM64) | `you-darwin-arm64.tar.gz` |
+
+          ### 🎯 Quick Start
+
+          1. Download the appropriate archive for your platform
+          2. Extract to a directory
+          3. Run `you --presets` to generate agent configurations
+          4. Edit `USER_INPUT.md` with your project requirements
+          5. Run `you --orchestrate` to start the workflow
+          6. Open OpenCode and invoke `@ceo` to begin
+
+          ### 📋 Requirements
+
+          - **OpenCode**: Latest version ([install here](https://opencode.ai/docs/))
+          - **GitHub Copilot Pro**: Recommended for unlimited GPT-5 Mini access
+          - **Go**: Not required (pre-compiled binaries included)
+
+          ### ✨ Key Features
+
+          - **Single-Prompt Orchestration**: Describe once, agents handle the rest
+          - **Professional Skills**: Production-ready workflows following Software Engineering principles
+          - **Research-First Development**: Agents verify latest syntax before coding
+          - **Clean Architecture**: SOLID principles, minimal dependencies
+          - **State Tracking**: Persistent artifact and task management
+
+          ### 🔐 Verification
+
+          Verify your download with SHA256 checksums in `SHA256SUMS.txt`
+
+          ---
+
+          **Build Date:** ${{ steps.tag.outputs.timestamp }}  
+          **Commit:** `${{ github.sha }}`  
+          **Go Version:** 1.21+
+
+          For documentation, see [README.md](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/README.md)
+        files: |
+          release/*
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

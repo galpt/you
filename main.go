@@ -1,0 +1,109 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"you/internal/orchestrator"
+)
+
+const version = "0.1.0-beta"
+
+func main() {
+	if len(os.Args) < 2 {
+		printUsage()
+		os.Exit(1)
+	}
+
+	command := os.Args[1]
+
+	// Get current working directory as project path
+	projectPath, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: failed to get current directory: %v\n", err)
+		os.Exit(1)
+	}
+
+	switch command {
+	case "--presets":
+		handlePresets(projectPath)
+	case "--orchestrate":
+		handleOrchestrate(projectPath)
+	case "--version", "-v":
+		fmt.Printf("You orchestrator v%s\n", version)
+	case "--help", "-h":
+		printUsage()
+	default:
+		fmt.Fprintf(os.Stderr, "Error: unknown command '%s'\n\n", command)
+		printUsage()
+		os.Exit(1)
+	}
+}
+
+func handlePresets(projectPath string) {
+	fmt.Println("╔═══════════════════════════════════════════════╗")
+	fmt.Println("║   You - Agentic Orchestrator (Beta v" + version + ")   ║")
+	fmt.Println("╚═══════════════════════════════════════════════╝")
+	fmt.Println()
+
+	orch, err := orchestrator.New(projectPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: failed to initialize orchestrator: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := orch.SetupPresets(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func handleOrchestrate(projectPath string) {
+	fmt.Println("╔═══════════════════════════════════════════════╗")
+	fmt.Println("║   You - Agentic Orchestrator (Beta v" + version + ")   ║")
+	fmt.Println("╚═══════════════════════════════════════════════╝")
+	fmt.Println()
+
+	// Check if presets have been run
+	userInputPath := filepath.Join(projectPath, "USER_INPUT.md")
+	if _, err := os.Stat(userInputPath); os.IsNotExist(err) {
+		fmt.Fprintf(os.Stderr, "Error: USER_INPUT.md not found.\n")
+		fmt.Fprintf(os.Stderr, "Please run 'you.exe --presets' first to generate required files.\n")
+		os.Exit(1)
+	}
+
+	orch, err := orchestrator.New(projectPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: failed to initialize orchestrator: %v\n", err)
+		os.Exit(1)
+	}
+
+	if err := orch.Orchestrate(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		os.Exit(1)
+	}
+}
+
+func printUsage() {
+	fmt.Println("You - Agentic Orchestrator")
+	fmt.Println("A single-prompt orchestrator that coordinates AI agents as a software company")
+	fmt.Println()
+	fmt.Println("Usage:")
+	fmt.Println("  you.exe --presets       Generate preset files (USER_INPUT.md and agent configs)")
+	fmt.Println("  you.exe --orchestrate   Start the orchestration workflow")
+	fmt.Println("  you.exe --version       Show version information")
+	fmt.Println("  you.exe --help          Show this help message")
+	fmt.Println()
+	fmt.Println("Workflow:")
+	fmt.Println("  1. Run 'you.exe --presets' to create initial setup files")
+	fmt.Println("  2. Edit USER_INPUT.md with your project requirements")
+	fmt.Println("  3. Run 'you.exe --orchestrate' to start the AI agent workflow")
+	fmt.Println("  4. Open OpenCode and use the @ceo agent to manage the project")
+	fmt.Println()
+	fmt.Println("Documentation:")
+	fmt.Println("  See ORCHESTRATION_GUIDE.md (created after --orchestrate) for detailed workflow")
+	fmt.Println()
+	fmt.Println("Learn more:")
+	fmt.Println("  GitHub: https://github.com/galpt/you")
+	fmt.Println("  OpenCode: https://opencode.ai/docs/agents/")
+}
