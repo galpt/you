@@ -32,7 +32,7 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 
 ## Status
 
-**Current Version**: 0.1.8
+**Current Version**: 0.1.9
 
 This is an early beta release. The orchestrator can:
 - ✅ Generate OpenCode agent configurations
@@ -362,7 +362,7 @@ you/
 
 | Agent | Role | Type | Responsibilities |
 |-------|------|------|------------------|
-| **CEO** | Orchestrator | Subagent | High-level decision making, delegates to PM, final approval |
+| **CEO** | Orchestrator | Primary | High-level decision making, delegates to PM, final approval |
 | **Product Manager** | Requirements | Subagent | Creates PRDs, user stories, acceptance criteria |
 | **Product Designer** | UI/UX | Subagent | User flows, design systems, component specifications |
 | **Solution Architect** | Architecture | Subagent | Tech stack, data models, API design, system architecture |
