@@ -39,7 +39,7 @@ func getCEOAgentTemplate() AgentTemplate {
 		Name:        "ceo",
 		Role:        models.AgentRoleCEO,
 		Description: "Orchestrates the entire workflow, delegates to PM and reviews final output",
-		Mode:        "subagent",
+		Mode:        "primary",
 		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.2,
 		Tools: map[string]bool{
@@ -139,16 +139,16 @@ func getLeadEngineerAgentTemplate() AgentTemplate {
 		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.2,
 		Tools: map[string]bool{
-			"write":     true,
-		"edit":      true,
-		"bash":      true,
-		"webfetch":  true,"skill": true,
-	},
-	Permissions: map[string]string{
-		"edit":     "allow",
-		"bash":     "allow",
-		"webfetch": "allow","skill": "allow",
-	},
+			"write":    true,
+			"edit":     true,
+			"bash":     true,
+			"webfetch": true, "skill": true,
+		},
+		Permissions: map[string]string{
+			"edit":     "allow",
+			"bash":     "allow",
+			"webfetch": "allow", "skill": "allow",
+		},
 		Prompt: generateLeadEngineerPrompt(),
 	}
 }
@@ -162,16 +162,16 @@ func getSWEAgentTemplate() AgentTemplate {
 		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.3,
 		Tools: map[string]bool{
-			"write":     true,
-		"edit":      true,
-		"bash":      true,
-		"webfetch":  true,"skill": true,
-	},
-	Permissions: map[string]string{
-		"edit":     "allow",
-		"bash":     "allow",
-		"webfetch": "allow","skill": "allow",
-	},
+			"write":    true,
+			"edit":     true,
+			"bash":     true,
+			"webfetch": true, "skill": true,
+		},
+		Permissions: map[string]string{
+			"edit":     "allow",
+			"bash":     "allow",
+			"webfetch": "allow", "skill": "allow",
+		},
 		Prompt: generateSWEPrompt(),
 	}
 }
@@ -185,15 +185,15 @@ func getQAAgentTemplate() AgentTemplate {
 		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.1,
 		Tools: map[string]bool{
-			"write":     true,
-			"edit":      true,
-			"bash":      true,
-			"webfetch":  true,"skill": true,
+			"write":    true,
+			"edit":     true,
+			"bash":     true,
+			"webfetch": true, "skill": true,
 		},
 		Permissions: map[string]string{
 			"edit":     "allow",
 			"bash":     "allow",
-			"webfetch": "allow","skill": "allow",
+			"webfetch": "allow", "skill": "allow",
 		},
 		Prompt: generateQAPrompt(),
 	}
@@ -233,16 +233,16 @@ func getDevOpsAgentTemplate() AgentTemplate {
 		Model:       "github-copilot/gpt-5-mini",
 		Temperature: 0.2,
 		Tools: map[string]bool{
-			"write":     true,
-		"edit":      true,
-		"bash":      true,
-		"webfetch":  true,"skill": true,
-	},
-	Permissions: map[string]string{
-		"edit":     "allow",
-		"bash":     "ask",
-		"webfetch": "allow","skill": "allow",
-	},
+			"write":    true,
+			"edit":     true,
+			"bash":     true,
+			"webfetch": true, "skill": true,
+		},
+		Permissions: map[string]string{
+			"edit":     "allow",
+			"bash":     "ask",
+			"webfetch": "allow", "skill": "allow",
+		},
 		Prompt: generateDevOpsPrompt(),
 	}
 }
@@ -297,5 +297,3 @@ tools:
 
 	return md
 }
-
-
