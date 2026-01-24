@@ -14,13 +14,10 @@
    - Based on ERD from REQUIREMENTS.md
 
 2. **Agent System** (`internal/agents/`)
-   - 11 specialized agent templates with OpenCode integration
+   - 10 specialized agent templates with OpenCode integration
    - Role-specific system prompts inspired by chatmode-v3.1
-   - Agents: CEO, **Guardrail (Budget Enforcer)**, PM, Designer, Architect, Lead Engineer, SWE, QA, Security, DevOps, Tech Writer
+   - Agents: CEO, PM, Designer, Architect, Lead Engineer, SWE, QA, Security, DevOps, Tech Writer
    - Each agent has custom tools (write, edit, bash, webfetch, delegate, skill)
-   - Guardrail agent has read-only access with veto power over scope creep
-   - **CEO monitors for infinite loops** and intervenes when agents exchange >3 messages without progress
-   - **Emergency guardrail invocation** when scope creep is suspected, regardless of checkpoint
    - Configured to make autonomous decisions without human intervention
 
 3. **State Management** (`internal/state/scr.go`)
@@ -115,7 +112,7 @@ Each agent is defined as a markdown file with YAML frontmatter:
 ```yaml
 ---
 description: "Agent purpose"
-mode: subagent  # All agents including CEO are subagents
+mode: primary     # CEO is primary; all others are subagent
 model: github-copilot/gpt-5-mini
 temperature: 0.2
 tools:
@@ -139,9 +136,11 @@ Agents communicate via OpenCode's `delegate` tool (Task tool):
 ```
 
 **Important Configuration:**
-- **All agents are `subagent` mode** (including CEO) to prevent routing through OpenCode's built-in agents
-- **Built-in agents** (Build, Plan, Explore, General) are explicitly configured in opencode.json to use gpt-5-mini
-- **Why**: OpenCode's built-in agents default to premium models; explicit config ensures 0x multiplier for all interactions
+- **CEO agent is `primary` mode** to ensure it receives the initial prompt and starts the workflow
+- **All other custom agents are `subagent` mode** (PM, Designer, Architect, etc.)
+- **Built-in agents are `subagent` mode** (Build, Plan, Explore, General, Title, Summary, Compaction) to prevent them from intercepting prompts
+- **All agents explicitly configured to use gpt-5-mini** to ensure 0x multiplier
+- **Why**: Only CEO should receive the initial orchestration prompt; all others are delegated to
 
 ## Key Features
 
@@ -271,7 +270,7 @@ Agents communicate via OpenCode's `delegate` tool (Task tool):
 | Requirement | Status | Implementation |
 |-------------|--------|----------------|
 | Single-prompt orchestration | ✅ | USER_INPUT.md → HTTP API → Autonomous workflow |
-| Role-based agents | ✅ | 11 specialized agents with custom prompts |
+| Role-based agents | ✅ | 10 specialized agents with custom prompts |
 | State management (SCR) | ✅ | JSON-based persistence in .you/ |
 | Artifact tracking | ✅ | PRD, ARCH_DOC, CODE, TEST_REPORT, etc. |
 | OpenCode integration | ✅ | HTTP API + SSE streaming |
@@ -361,7 +360,7 @@ The You orchestrator is a **production-ready**, **modular**, and **extensible** 
 
 ### Key Achievements
 ✅ Clean, modular Go codebase
-✅ 11 specialized AI agents with autonomous prompts
+✅ 10 specialized AI agents with autonomous prompts
 ✅ Complete HTTP API integration with SSE streaming
 ✅ State management and artifact tracking
 ✅ Re-orchestration support with session isolation

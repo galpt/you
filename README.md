@@ -32,7 +32,7 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 
 ## Status
 
-**Current Version**: 0.2.0
+**Current Version**: 0.1.11
 
 This is an early beta release. The orchestrator can:
 - ✅ Generate OpenCode agent configurations
@@ -47,12 +47,11 @@ This is an early beta release. The orchestrator can:
 ## Features
 
 - **Fully Autonomous Operation**: Zero human intervention required - agents make intelligent decisions automatically via HTTP API
+- **Anti-Scope-Creep Protocol**: CEO and PM agents actively reject unrequested features to prevent over-engineering and budget overruns
 - **Real-time Event Streaming**: Watch all agent activity, file changes, and decisions in real-time via Server-Sent Events
 - **Re-orchestration Support**: Edit requirements and re-run for fresh start with session isolation
 - **Single-Prompt Orchestration**: Describe your project once; agents handle the rest
-- **11 Specialized Agents**: CEO, **Guardrail (Budget Enforcer)**, Product Manager, Designer, Architect, Lead Engineer, SWE, QA, Security, DevOps, Technical Writer
-- **Budget Protection System**: Guardrail agent prevents scope creep and over-engineering, ensures strict adherence to USER_INPUT.md requirements
-- **Loop Detection & Prevention**: CEO monitors for infinite agent loops and intervenes automatically to resolve deadlocks
+- **10 Specialized Agents**: CEO, Product Manager, Designer, Architect, Lead Engineer, SWE, QA, Security, DevOps, Technical Writer
 - **Professional Skills**: Reusable workflows for PRD creation, code review, security audits, API design, deployment checklists
 - **Web Research Capabilities**: All agents can browse the internet to verify documentation and latest syntax before writing code
 - **Smart Agent System**: Agents research best practices and make autonomous decisions based on industry standards
@@ -69,7 +68,7 @@ This is an early beta release. The orchestrator can:
 - **OpenCode**: Latest version ([install here](https://opencode.ai/docs/))
 - **GitHub Copilot Pro**: **Strongly recommended** for unlimited `gpt-5-mini` access
   - ⚠️ **Critical**: GitHub Copilot uses a multiplier system - `gpt-5-mini` has **0x multiplier** (unlimited)
-  - Our config uses `gpt-5-mini` exclusively: `11 agents × 0 multiplier = 0 premium requests`
+  - Our config uses `gpt-5-mini` exclusively: `10 agents × 0 multiplier = 0 premium requests`
   - Refer to [GitMurf on OpenCode pricing](https://x.com/GitMurf/status/1879705548899336622)
 - **Alternative**: Any OpenCode-supported LLM provider (Anthropic, OpenAI, etc.)
 
@@ -221,19 +220,15 @@ you.exe --orchestrate
 The CEO agent orchestrates the entire team **without human intervention**:
 
 1. `@ceo` → `@product-manager` - Create PRD
-2. **`@guardrail` - Validate PRD compliance with USER_INPUT.md (CHECKPOINT)**
-3. `@product-manager` → `@product-designer` - UI/UX design
-4. `@product-designer` → `@solution-architect` - System architecture
-5. **`@guardrail` - Validate architecture (CHECKPOINT)**
-6. `@solution-architect` → `@lead-engineer` - Task breakdown
-7. `@lead-engineer` → `@software-engineer` - Implementation
-8. **`@guardrail` - Validate implementation scope (CHECKPOINT)**
-9. `@software-engineer` → `@qa-engineer` - Testing
-10. `@qa-engineer` → `@security-engineer` - Security audit
-11. `@security-engineer` → `@devops-sre` - Deployment setup
-12. `@devops-sre` → `@technical-writer` - Documentation
-13. **`@guardrail` - Final scope validation (CHECKPOINT)**
-14. `@technical-writer` → `@ceo` - Final approval
+2. `@product-manager` → `@product-designer` - UI/UX design
+3. `@product-designer` → `@solution-architect` - System architecture
+4. `@solution-architect` → `@lead-engineer` - Task breakdown
+5. `@lead-engineer` → `@software-engineer` - Implementation
+6. `@software-engineer` → `@qa-engineer` - Testing
+7. `@qa-engineer` → `@security-engineer` - Security audit
+8. `@security-engineer` → `@devops-sre` - Deployment setup
+9. `@devops-sre` → `@technical-writer` - Documentation
+10. `@technical-writer` → `@ceo` - Final approval
 
 > [!NOTE]
 > 1. **All delegation happens automatically via the `delegate` tool.** You just watch the stream!
@@ -250,19 +245,13 @@ User Goal → CEO Agent
             ↓
          Product Manager (PRD)
             ↓
-         ✅ Guardrail Checkpoint: PRD Validation
-            ↓
          Product Designer (UI/UX)
             ↓
          Solution Architect (Architecture)
             ↓
-         ✅ Guardrail Checkpoint: Architecture Validation
-            ↓
          Lead Engineer (Task Breakdown)
             ↓
          Software Engineers (Implementation)
-            ↓
-         ✅ Guardrail Checkpoint: Scope Validation
             ↓
          QA Engineer (Testing) ←→ Bug Reports → Back to SWE
             ↓
@@ -271,8 +260,6 @@ User Goal → CEO Agent
          DevOps/SRE (Deployment)
             ↓
          Technical Writer (Documentation)
-            ↓
-         ✅ Guardrail Checkpoint: Final Scope Validation
             ↓
          CEO (Final Review & Approval)
 ```
@@ -376,8 +363,7 @@ you/
 
 | Agent | Role | Type | Responsibilities |
 |-------|------|------|------------------|
-| **CEO** | Orchestrator | Primary | High-level decision making, delegates to PM, final approval |
-| **Guardrail** | Budget Enforcer | Subagent | Prevents scope creep and over-engineering, validates strict adherence to USER_INPUT.md, rejects unrequested features, protects company budget |
+| **CEO** | Orchestrator | Primary | High-level decision making, delegates to PM, final approval, enforces anti-scope-creep protocol |
 | **Product Manager** | Requirements | Subagent | Creates PRDs, user stories, acceptance criteria |
 | **Product Designer** | UI/UX | Subagent | User flows, design systems, component specifications |
 | **Solution Architect** | Architecture | Subagent | Tech stack, data models, API design, system architecture |

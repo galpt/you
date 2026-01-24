@@ -49,7 +49,7 @@ you --presets
 
 This creates:
 - `USER_INPUT.md` - Your project requirements
-- `.opencode/agents/*.md` - 11 AI agent definitions
+- `.opencode/agents/*.md` - 10 AI agent definitions
 - `.opencode/opencode.json` - OpenCode configuration
 - `.opencode/skills/*/SKILL.md` - 5 professional skill definitions
 - `.you/` - State management directory
@@ -156,27 +156,24 @@ The orchestration runs **completely autonomously**:
 
 1. CEO agent reads requirements and creates project plan
 2. Delegates to `@product-manager` to create comprehensive PRD
-3. **`@guardrail` validates PRD compliance with USER_INPUT.md (CHECKPOINT)**
-4. PM delegates to `@product-designer` for UX design
-5. Designer delegates to `@solution-architect` for system architecture
-6. **`@guardrail` validates architecture (CHECKPOINT)**
-7. Architect delegates to `@lead-engineer` for task breakdown
-8. Lead Engineer delegates to `@software-engineer` for implementation
-9. **`@guardrail` validates implementation scope (CHECKPOINT)**
-10. Software Engineer uses `webfetch` to research best practices
-11. `@qa-engineer` validates implementation with comprehensive tests
-12. `@security-engineer` performs security audit
-13. `@devops-sre` sets up deployment pipeline
-14. `@technical-writer` creates documentation
-15. **`@guardrail` performs final scope validation (CHECKPOINT)**
-16. CEO reviews and approves final deliverable
+3. PM delegates to `@product-designer` for UX design
+4. Designer delegates to `@solution-architect` for system architecture
+5. Architect delegates to `@lead-engineer` for task breakdown
+6. Lead Engineer delegates to `@software-engineer` for implementation
+7. Software Engineer uses `webfetch` to research best practices
+8. `@qa-engineer` validates implementation with comprehensive tests
+9. `@security-engineer` performs security audit
+10. `@devops-sre` sets up deployment pipeline
+11. `@technical-writer` creates documentation
+12. CEO reviews and approves final deliverable
 
 **All delegation happens automatically** - you just watch the stream!
 
-**Resilience Features (v0.1.10+):**
+**Resilience Features (v0.1.11+):**
 - Automatic retry with exponential backoff on rate limits (429 errors)
 - Up to 5 retry attempts with backoff from 2s to 2 minutes
 - Activity monitoring warns if stuck for 10+ minutes
+- CEO as primary agent, all others as subagent for correct routing
 - Detailed error logging for diagnostics
 
 ## Monitoring Progress
@@ -284,16 +281,16 @@ Agents are configured to be **self-sufficient** through:
 - Try manually: `opencode serve --port 4096`
 
 ### No events streaming / Stuck after "Streaming real-time events"
-**Most likely cause:** Using an older version with CEO as subagent.
+**Most likely cause:** Using an older version with incorrect agent modes (versions before 0.1.11).
 
 **Solution:** 
-- Re-run `you --presets` to regenerate agent configs (CEO must be primary)
+- Re-run `you --presets` to regenerate agent configs (CEO must be primary in v0.1.11+)
 - Or manually edit `.opencode/opencode.json` and `.opencode/agents/ceo.md`:
   ```yaml
-  mode: primary  # Change from "subagent" to "primary"
+  mode: primary  # CEO must be primary
   ```
 
-**Why this matters:** OpenCode requires at least one primary agent to start the workflow. CEO as primary agent ensures proper orchestration routing.
+**Why this matters:** OpenCode requires at least one primary agent to start the workflow. CEO as primary agent ensures proper orchestration routing. All other agents (PM, Designer, Architect, etc.) remain as subagents.
 
 ### No agent responses (messages sent but no replies)
 - Verify GitHub Copilot is connected: Run `opencode` TUI and check `/connect` status
@@ -317,7 +314,7 @@ you --orchestrate  # Fresh start with new session
 - Read the full [README.md](README.md) for comprehensive documentation
 - Check [TECHNICAL_DETAILS.md](TECHNICAL_DETAILS.md) for HTTP API architecture deep dive
 - Review [IMPLEMENTATION.md](IMPLEMENTATION.md) for codebase overview
-- Explore agent prompts in `.opencode/agents/` to understand autonomous behavior
+- Explore agent prompts in `.opencode/agents/` to understand autonomous behavior and anti-scope-creep protocol
 - Join the community (Discord/GitHub discussions)
 
 ---

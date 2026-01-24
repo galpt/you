@@ -45,12 +45,8 @@ The OpenCode TUI is **interactive by design** - it expects human input. This mea
 ┌─────────────────────────────────────────────────────────┐
 │  CEO Agent orchestrates entire team                     │
 │  - Delegates to @product-manager, @architect, etc.      │
-│  - Invokes @guardrail at checkpoints for validation     │
-│  - Monitors for infinite loops (>3 exchanges)           │
-│  - Emergency guardrail invocation on scope creep        │
 │  - Uses webfetch for research                           │
 │  - Makes decisions based on best practices              │
-│  - Guardrail prevents scope creep and over-engineering  │
 │  - No human intervention required                       │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -265,42 +261,42 @@ The **You** orchestrator uses **exclusively** `gpt-5-mini` to ensure **zero prem
   "small_model": "github-copilot/gpt-5-mini",
   "agent": {
     "build": {
-      "mode": "primary",
+      "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.2
     },
     "plan": {
-      "mode": "primary",
+      "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.3
     },
     "explore": {
-      "mode": "primary",
+      "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.4
     },
     "general": {
-      "mode": "primary",
+      "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.3
     },
     "title": {
-      "mode": "primary",
+      "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.5
     },
     "summary": {
-      "mode": "primary",
+      "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.3
     },
     "compaction": {
-      "mode": "primary",
+      "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.2
     },
     "explore": {
-      "mode": "primary",
+      "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.4
     },
@@ -310,7 +306,7 @@ The **You** orchestrator uses **exclusively** `gpt-5-mini` to ensure **zero prem
       "temperature": 0.3
     },
     "ceo": {
-      "mode": "subagent",
+      "mode": "primary",
       "model": "github-copilot/gpt-5-mini",
       ...
     },
@@ -324,9 +320,10 @@ The **You** orchestrator uses **exclusively** `gpt-5-mini` to ensure **zero prem
 ```
 
 **Why this matters:**
-- ✅ **Built-in agents** (build, plan, explore, general, title, summary, compaction): Explicitly configured to use gpt-5-mini (0x multiplier)
+- ✅ **Built-in agents** (build, plan, explore, general, title, summary, compaction): Set to **subagent** mode and use gpt-5-mini (0x multiplier)
 - ✅ **10 Custom agents** (CEO, PM, Designer, etc.): All use gpt-5-mini (0x multiplier)
-- ✅ **All custom agents set to subagent mode**: Prevents routing through unconfigured built-in agents
+- ✅ **CEO set to primary mode**: Receives initial prompt and starts workflow
+- ✅ **All other agents set to subagent mode**: Prevents built-in agents from intercepting the initial prompt
 - ✅ **Lightweight tasks**: N requests × 0 = 0 premium requests
 - ✅ **Result**: Guaranteed 0 premium requests with GitHub Copilot Pro
 

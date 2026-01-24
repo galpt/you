@@ -22,7 +22,6 @@ type AgentTemplate struct {
 func GetAllAgentTemplates() []AgentTemplate {
 	return []AgentTemplate{
 		getCEOAgentTemplate(),
-		getGuardrailAgentTemplate(),
 		getPMAgentTemplate(),
 		getDesignerAgentTemplate(),
 		getArchitectAgentTemplate(),
@@ -56,30 +55,6 @@ func getCEOAgentTemplate() AgentTemplate {
 			"skill":    "allow",
 		},
 		Prompt: generateCEOPrompt(),
-	}
-}
-
-func getGuardrailAgentTemplate() AgentTemplate {
-	return AgentTemplate{
-		Name:        "guardrail",
-		Role:        models.AgentRoleGuardrail,
-		Description: "Budget protection - ensures strict adherence to USER_INPUT.md requirements, prevents scope creep and over-engineering",
-		Mode:        "subagent",
-		Model:       "github-copilot/gpt-5-mini",
-		Temperature: 0.1,
-		Tools: map[string]bool{
-			"write":    false,
-			"edit":     false,
-			"bash":     false,
-			"webfetch": true,
-			"skill":    false,
-		},
-		Permissions: map[string]string{
-			"read":     "allow",
-			"webfetch": "allow",
-			"task":     "allow",
-		},
-		Prompt: generateGuardrailPrompt(),
 	}
 }
 

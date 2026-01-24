@@ -138,12 +138,12 @@ jobs:
           ### 🚀 What's Included
 
           - ✅ Cross-platform binaries (Windows, Linux, macOS Intel/ARM)
-          - ✅ **11 specialized AI agents** with autonomous decision-making (CEO, Guardrail, PM, Designer, Architect, Lead, SWE, QA, Security, DevOps, Writer)
-          - ✅ **Budget Protection System** - Guardrail agent prevents scope creep and over-engineering
-          - ✅ **Loop Detection & Prevention** - CEO monitors and resolves infinite agent loops automatically
+          - ✅ 10 specialized AI agents with autonomous decision-making
+          - ✅ **Anti-scope-creep protocol** to prevent over-engineering and budget overruns
           - ✅ **HTTP API integration** for fully autonomous orchestration
           - ✅ **Real-time event streaming** via Server-Sent Events
-          - ✅ **Intelligent rate limit handling** with exponential backoff
+          - ✅ **Smart retry logic** with exponential backoff for rate limits
+          - ✅ **Correct agent routing** with CEO as primary, all others as subagent (v0.1.11+)
           - ✅ Professional skills for software engineering workflows
           - ✅ Web research capabilities via `webfetch` tool
           - ✅ State management with session isolation
@@ -170,27 +170,41 @@ jobs:
           ### 📋 Requirements
 
           - **OpenCode**: Latest version ([install here](https://opencode.ai/docs/))
-          - **GitHub Copilot Pro**: Recommended for unlimited GPT-5 Mini access
+          - **GitHub Copilot Pro**: Recommended for unlimited GPT-5 Mini access (0x multiplier = 0 premium requests)
           - **Alternative**: Any OpenCode-supported provider (Anthropic, OpenAI, etc.)
 
           ### ✨ Key Features
 
           - **Fully Autonomous Operation**: Zero human intervention required
+          - **Scope Control**: CEO and PM agents reject unrequested features to prevent over-engineering
+          - **Correct Agent Routing**: CEO as primary agent, all others (including built-in agents) as subagent
           - **HTTP API Integration**: Uses `opencode serve` for programmatic control
           - **Real-time Visibility**: Server-Sent Events stream all agent activity
+          - **Resilient Execution**: Automatic retry with exponential backoff (2s → 2min) for rate limits
+          - **Activity Monitoring**: Warns if workflow stuck for 10+ minutes
           - **Re-orchestration Support**: Edit requirements and re-run for fresh start
           - **Smart Agents**: Self-sufficient decision-making via webfetch research
-          - **Professional Skills**: Production-ready workflows (PRD, code review, security audit, etc.)
+          - **Professional Skills**: Production-ready workflows (PRD, code review, security audit, API design, deployment)
           - **Clean Architecture**: SOLID principles, modular Go codebase
 
           ### 🔄 How It Works
 
-          1. Launches OpenCode HTTP server in background
+          1. Launches OpenCode HTTP server in background (`opencode serve --port 4096`)
           2. Creates isolated session for your project
-          3. Sends async prompt to CEO agent
-          4. CEO orchestrates entire team (PM → Designer → Architect → Engineers → QA → Security → DevOps → Docs)
-          5. All file changes, decisions, and tool calls stream to your terminal
-          6. Press Ctrl+C to stop, edit requirements, and re-orchestrate
+          3. Sends async prompt to CEO agent (only primary agent)
+          4. Built-in agents (build, plan, explore, etc.) set to subagent to prevent interception
+          5. CEO orchestrates entire team (PM → Designer → Architect → Engineers → QA → Security → DevOps → Docs)
+          5. Agents enforce anti-scope-creep protocol (only build what user requested)
+          6. All file changes, decisions, and tool calls stream to your terminal
+          7. Automatic retry on rate limits with smart backoff
+          8. Press Ctrl+C to stop, edit requirements, and re-orchestrate
+
+          ### 🛡️ Anti-Over-Engineering Protocol (v0.1.11+)
+
+          - CEO and PM agents **actively reject** unrequested features
+          - **Forbidden**: "While we're at it...", "For better UX...", "To future-proof..."
+          - **Enforced**: Only build what user explicitly requested
+          - **Result**: Prevents scope creep, saves time and budget
 
           ### 🔐 Verification
 

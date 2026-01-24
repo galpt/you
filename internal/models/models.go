@@ -39,7 +39,6 @@ const (
 	AgentRoleSecurity          AgentRole = "SECURITY_ENGINEER"
 	AgentRoleDevOps            AgentRole = "DEVOPS_SRE"
 	AgentRoleTechnicalWriter   AgentRole = "TECHNICAL_WRITER"
-	AgentRoleGuardrail         AgentRole = "GUARDRAIL"
 )
 
 // TaskStatus represents the state of a task
