@@ -7,7 +7,7 @@ import (
 	"you/internal/orchestrator"
 )
 
-const version = "0.1.2"
+const version = "0.1.8"
 
 func main() {
 	if len(os.Args) < 2 {

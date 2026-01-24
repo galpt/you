@@ -165,23 +165,60 @@ func (o *Orchestrator) createOpenCodeConfig() error {
 
 	config := `{
   "$schema": "https://opencode.ai/config.json",
+  "model": "github-copilot/gpt-5-mini",
+  "small_model": "github-copilot/gpt-5-mini",
   "agent": {
-    "ceo": {
-      "description": "Orchestrates the entire workflow, delegates to PM and reviews final output",
+    "build": {
       "mode": "primary",
       "model": "github-copilot/gpt-5-mini",
+      "temperature": 0.2
+    },
+    "plan": {
+      "mode": "primary",
+      "model": "github-copilot/gpt-5-mini",
+      "temperature": 0.3
+    },
+    "explore": {
+      "mode": "primary",
+      "model": "github-copilot/gpt-5-mini",
+      "temperature": 0.4
+    },
+    "general": {
+      "mode": "primary",
+      "model": "github-copilot/gpt-5-mini",
+      "temperature": 0.3
+    },
+    "title": {
+      "mode": "primary",
+      "model": "github-copilot/gpt-5-mini",
+      "temperature": 0.5
+    },
+    "summary": {
+      "mode": "primary",
+      "model": "github-copilot/gpt-5-mini",
+      "temperature": 0.3
+    },
+    "compaction": {
+      "mode": "primary",
+      "model": "github-copilot/gpt-5-mini",
+      "temperature": 0.2
+    },
+    "ceo": {
+      "description": "Orchestrates the entire workflow, delegates to PM and reviews final output",
+      "mode": "subagent",
+      "model": "github-copilot/gpt-5-mini",
       "temperature": 0.2,
-      "tools": {
-        "write": false,
-        "edit": false,
-        "bash": false,
-        "webfetch": true
-      },
-      "skill": true,
       "permission": {
+        "read": "allow",
+        "edit": "allow",
+        "bash": "allow",
         "task": "allow",
         "webfetch": "allow",
-        "skill": "allow"
+        "websearch": "allow",
+        "codesearch": "allow",
+        "skill": {
+          "*": "allow"
+        }
       },
       "prompt": "{file:agents/ceo.md}"
     },
@@ -190,18 +227,19 @@ func (o *Orchestrator) createOpenCodeConfig() error {
       "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.3,
-      "tools": {
-        "write": true,
-        "edit": true,
-        "bash": false,
-        "webfetch": true
-      },
-      "skill": true,
       "permission": {
+        "read": "allow",
         "edit": "allow",
+        "bash": "allow",
         "task": "allow",
         "webfetch": "allow",
-        "skill": "allow"
+        "websearch": "allow",
+        "codesearch": "allow",
+        "skill": {
+          "prd-*": "allow",
+          "requirements-*": "allow",
+          "planning-*": "allow"
+        }
       },
       "prompt": "{file:agents/product-manager.md}"
     },
@@ -210,18 +248,19 @@ func (o *Orchestrator) createOpenCodeConfig() error {
       "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.4,
-      "tools": {
-        "write": true,
-        "edit": true,
-        "bash": false,
-        "webfetch": true
-      },
-      "skill": true,
       "permission": {
+        "read": "allow",
         "edit": "allow",
+        "bash": "allow",
         "task": "allow",
         "webfetch": "allow",
-        "skill": "allow"
+        "websearch": "allow",
+        "codesearch": "allow",
+        "skill": {
+          "design-*": "allow",
+          "ux-*": "allow",
+          "ui-*": "allow"
+        }
       },
       "prompt": "{file:agents/product-designer.md}"
     },
@@ -230,18 +269,19 @@ func (o *Orchestrator) createOpenCodeConfig() error {
       "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.2,
-      "tools": {
-        "write": true,
-        "edit": true,
-        "bash": false,
-        "webfetch": true
-      },
-      "skill": true,
       "permission": {
+        "read": "allow",
         "edit": "allow",
+        "bash": "allow",
         "task": "allow",
         "webfetch": "allow",
-        "skill": "allow"
+        "websearch": "allow",
+        "codesearch": "allow",
+        "skill": {
+          "architecture-*": "allow",
+          "api-design-*": "allow",
+          "system-design-*": "allow"
+        }
       },
       "prompt": "{file:agents/solution-architect.md}"
     },
@@ -250,19 +290,20 @@ func (o *Orchestrator) createOpenCodeConfig() error {
       "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.2,
-      "tools": {
-        "write": true,
-        "edit": true,
-        "bash": true,
-        "webfetch": true
-      },
-      "skill": true,
       "permission": {
+        "read": "allow",
         "edit": "allow",
         "bash": "allow",
         "task": "allow",
         "webfetch": "allow",
-        "skill": "allow"
+        "websearch": "allow",
+        "codesearch": "allow",
+        "lsp": "allow",
+        "skill": {
+          "code-review-*": "allow",
+          "pr-review": "allow",
+          "task-breakdown-*": "allow"
+        }
       },
       "prompt": "{file:agents/lead-engineer.md}"
     },
@@ -271,18 +312,20 @@ func (o *Orchestrator) createOpenCodeConfig() error {
       "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.3,
-      "tools": {
-        "write": true,
-        "edit": true,
-        "bash": true,
-        "webfetch": true
-      },
-      "skill": true,
       "permission": {
+        "read": "allow",
         "edit": "allow",
         "bash": "allow",
+        "task": "allow",
         "webfetch": "allow",
-        "skill": "allow"
+        "websearch": "allow",
+        "codesearch": "allow",
+        "lsp": "allow",
+        "skill": {
+          "implementation-*": "allow",
+          "coding-*": "allow",
+          "testing-*": "allow"
+        }
       },
       "prompt": "{file:agents/software-engineer.md}"
     },
@@ -291,19 +334,20 @@ func (o *Orchestrator) createOpenCodeConfig() error {
       "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.1,
-      "tools": {
-        "write": true,
-        "edit": true,
-        "bash": true,
-        "webfetch": true
-      },
-      "skill": true,
       "permission": {
+        "read": "allow",
         "edit": "allow",
         "bash": "allow",
         "task": "allow",
         "webfetch": "allow",
-        "skill": "allow"
+        "websearch": "allow",
+        "codesearch": "allow",
+        "lsp": "allow",
+        "skill": {
+          "testing-*": "allow",
+          "qa-*": "allow",
+          "validation-*": "allow"
+        }
       },
       "prompt": "{file:agents/qa-engineer.md}"
     },
@@ -312,18 +356,20 @@ func (o *Orchestrator) createOpenCodeConfig() error {
       "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.1,
-      "tools": {
-        "write": true,
-        "edit": false,
-        "bash": true,
-        "webfetch": true
-      },
-      "skill": true,
       "permission": {
-        "edit": "deny",
+        "read": "allow",
+        "edit": "allow",
         "bash": "allow",
+        "task": "allow",
         "webfetch": "allow",
-        "skill": "allow"
+        "websearch": "allow",
+        "codesearch": "allow",
+        "lsp": "allow",
+        "skill": {
+          "security-*": "allow",
+          "audit-*": "allow",
+          "vulnerability-*": "allow"
+        }
       },
       "prompt": "{file:agents/security-engineer.md}"
     },
@@ -332,19 +378,21 @@ func (o *Orchestrator) createOpenCodeConfig() error {
       "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.2,
-      "tools": {
-        "write": true,
-        "edit": true,
-        "bash": true,
-        "webfetch": true
-      },
-      "skill": true,
       "permission": {
+        "read": "allow",
         "edit": "allow",
-        "bash": "ask",
+        "bash": "allow",
         "task": "allow",
         "webfetch": "allow",
-        "skill": "allow"
+        "websearch": "allow",
+        "codesearch": "allow",
+        "lsp": "allow",
+        "skill": {
+          "deployment-*": "allow",
+          "infrastructure-*": "allow",
+          "cicd-*": "allow",
+          "devops-*": "allow"
+        }
       },
       "prompt": "{file:agents/devops-sre.md}"
     },
@@ -353,17 +401,20 @@ func (o *Orchestrator) createOpenCodeConfig() error {
       "mode": "subagent",
       "model": "github-copilot/gpt-5-mini",
       "temperature": 0.3,
-      "tools": {
-        "write": true,
-        "edit": true,
-        "bash": false,
-        "webfetch": true
-      },
-      "skill": true,
       "permission": {
+        "read": "allow",
         "edit": "allow",
+        "bash": "allow",
+        "task": "allow",
         "webfetch": "allow",
-        "skill": "allow"
+        "websearch": "allow",
+        "codesearch": "allow",
+        "lsp": "allow",
+        "skill": {
+          "documentation-*": "allow",
+          "writing-*": "allow",
+          "api-docs-*": "allow"
+        }
       },
       "prompt": "{file:agents/technical-writer.md}"
     }

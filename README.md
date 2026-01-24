@@ -18,7 +18,7 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 - [Professional Skills](#professional-skills)
 - [Usage Examples](#usage-examples)
 - [Design Notes](#design-notes)
-- [Limitations & Roadmap](#limitations--roadmap)
+- [Limitations](#limitations)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -32,7 +32,7 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 
 ## Status
 
-**Current Version**: 0.1.2
+**Current Version**: 0.1.8
 
 This is an early beta release. The orchestrator can:
 - ✅ Generate OpenCode agent configurations
@@ -41,8 +41,6 @@ This is an early beta release. The orchestrator can:
 - ✅ **Fully autonomous orchestration via HTTP API**
 - ✅ **Real-time event streaming** via Server-Sent Events
 - ✅ **Re-orchestration support** with session isolation
-- 🚧 Multi-project concurrent orchestration
-- 🚧 Web UI dashboard for monitoring
 
 ---
 
@@ -67,7 +65,10 @@ This is an early beta release. The orchestrator can:
 
 - **Go**: 1.21 or higher
 - **OpenCode**: Latest version ([install here](https://opencode.ai/docs/))
-- **GitHub Copilot Pro**: Recommended for unlimited GPT-5 Mini access
+- **GitHub Copilot Pro**: **Strongly recommended** for unlimited `gpt-5-mini` access
+  - ⚠️ **Critical**: GitHub Copilot uses a multiplier system - `gpt-5-mini` has **0x multiplier** (unlimited)
+  - Our config uses `gpt-5-mini` exclusively: `10 agents × 0 multiplier = 0 premium requests`
+  - Refer to [GitMurf on OpenCode pricing](https://x.com/GitMurf/status/1879705548899336622)
 - **Alternative**: Any OpenCode-supported LLM provider (Anthropic, OpenAI, etc.)
 
 ---
@@ -327,7 +328,7 @@ Agents use OpenCode's **delegate tool** to pass work:
 @lead-engineer → invokes → @software-engineer
 ```
 
-Each agent has specific permissions and tools defined in `.opencode/opencode.json`.
+All agents have access to the same built-in tools (write, edit, bash, webfetch) and permissions (delegate, skill) defined in `.opencode/opencode.json`. Role-specific behavior is guided by their system prompts.
 
 ---
 
@@ -361,7 +362,7 @@ you/
 
 | Agent | Role | Type | Responsibilities |
 |-------|------|------|------------------|
-| **CEO** | Orchestrator | **Primary** | High-level decision making, delegates to PM, final approval |
+| **CEO** | Orchestrator | Subagent | High-level decision making, delegates to PM, final approval |
 | **Product Manager** | Requirements | Subagent | Creates PRDs, user stories, acceptance criteria |
 | **Product Designer** | UI/UX | Subagent | User flows, design systems, component specifications |
 | **Solution Architect** | Architecture | Subagent | Tech stack, data models, API design, system architecture |
@@ -397,7 +398,8 @@ These skills mirror real software company workflows and are production-ready—n
 - **Risk Management**: Explicit consideration of dependencies and constraints
 - **Documentation Standards**: Consistent format and completeness requirements
 
-Skills are stored in `.opencode/skills/<skill-name>/SKILL.md` and can be extended with your organization's specific methodologies.
+> [!TIP]
+> Skills are stored in `.opencode/skills/<skill-name>/SKILL.md` and can be extended with your organization's specific methodologies.
 
 **How Agents Use Skills:**
 ```
@@ -466,30 +468,13 @@ Agents follow a "never stop until complete" protocol:
 
 ---
 
-## Limitations & Roadmap
+## Limitations
 
 ### Current Limitations
 - One orchestration at a time (single OpenCode server instance)
 - No automatic retry on OpenCode rate limits
 - Terminal-only interface (no web UI)
 - Fixed port 4096 for OpenCode server
-
-### Roadmap (v0.2.0)
-- [ ] Multi-project concurrent orchestration (multiple OpenCode servers on different ports)
-- [ ] Smart retry logic for rate limits with exponential backoff
-- [ ] Web UI dashboard for monitoring workflow progress
-- [ ] Health check polling instead of fixed sleep on server startup
-- [ ] Event filtering and customization (filter by agent, file type, etc.)
-- [ ] Integration with GitHub/GitLab for issue tracking
-- [ ] Cost tracking and budget limits
-- [ ] Agent performance metrics and analytics
-
-### Future Ideas
-- [ ] Custom agent creation via CLI
-- [ ] Human-in-the-loop approval system for dangerous operations
-- [ ] Resume orchestration from checkpoints
-- [ ] Agent skill learning and improvement
-- [ ] VS Code extension for orchestrator control
 
 ---
 

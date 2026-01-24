@@ -110,7 +110,7 @@ Each agent is defined as a markdown file with YAML frontmatter:
 ```yaml
 ---
 description: "Agent purpose"
-mode: primary  # or "subagent" for delegated agents
+mode: subagent  # All agents including CEO are subagents
 model: github-copilot/gpt-5-mini
 temperature: 0.2
 tools:
@@ -128,12 +128,15 @@ permission:
 ### Workflow Automation
 Agents communicate via OpenCode's `delegate` tool (Task tool):
 ```
-@ceo (PRIMARY AGENT) → @product-manager → @product-designer → @solution-architect 
+@ceo → @product-manager → @product-designer → @solution-architect 
 → @lead-engineer → @software-engineer → @qa-engineer → @security-engineer 
 → @devops-sre → @technical-writer → @ceo (approval)
 ```
 
-**Important:** The CEO is configured as a `primary` agent (mode: primary) so it can be invoked directly via the HTTP API. All other agents are `subagent` mode and are invoked by the CEO or other agents via the Task tool.
+**Important Configuration:**
+- **All agents are `subagent` mode** (including CEO) to prevent routing through OpenCode's built-in agents
+- **Built-in agents** (Build, Plan, Explore, General) are explicitly configured in opencode.json to use gpt-5-mini
+- **Why**: OpenCode's built-in agents default to premium models; explicit config ensures 0x multiplier for all interactions
 
 ## Key Features
 
