@@ -229,6 +229,18 @@ func (o *Orchestrator) createOpenCodeConfig() error {
       },
       "prompt": "{file:agents/ceo.md}"
     },
+    "guardrail": {
+      "description": "Budget protection - ensures strict adherence to USER_INPUT.md requirements, prevents scope creep and over-engineering",
+      "mode": "subagent",
+      "model": "github-copilot/gpt-5-mini",
+      "temperature": 0.1,
+      "permission": {
+        "read": "allow",
+        "task": "allow",
+        "webfetch": "allow"
+      },
+      "prompt": "{file:agents/guardrail.md}"
+    },
     "product-manager": {
       "description": "Defines requirements, creates PRDs, and validates acceptance criteria",
       "mode": "subagent",

@@ -14,10 +14,11 @@
    - Based on ERD from REQUIREMENTS.md
 
 2. **Agent System** (`internal/agents/`)
-   - 10 specialized agent templates with OpenCode integration
+   - 11 specialized agent templates with OpenCode integration
    - Role-specific system prompts inspired by chatmode-v3.1
-   - Agents: CEO, PM, Designer, Architect, Lead Engineer, SWE, QA, Security, DevOps, Tech Writer
+   - Agents: CEO, **Guardrail (Budget Enforcer)**, PM, Designer, Architect, Lead Engineer, SWE, QA, Security, DevOps, Tech Writer
    - Each agent has custom tools (write, edit, bash, webfetch, delegate, skill)
+   - Guardrail agent has read-only access with veto power over scope creep
    - Configured to make autonomous decisions without human intervention
 
 3. **State Management** (`internal/state/scr.go`)

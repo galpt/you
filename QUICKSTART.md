@@ -156,16 +156,20 @@ The orchestration runs **completely autonomously**:
 
 1. CEO agent reads requirements and creates project plan
 2. Delegates to `@product-manager` to create comprehensive PRD
-3. PM delegates to `@product-designer` for UX design
-4. Designer delegates to `@solution-architect` for system architecture
-5. Architect delegates to `@lead-engineer` for task breakdown
-6. Lead Engineer delegates to `@software-engineer` for implementation
-7. Software Engineer uses `webfetch` to research best practices
-8. `@qa-engineer` validates implementation with comprehensive tests
-9. `@security-engineer` performs security audit
-10. `@devops-sre` sets up deployment pipeline
-11. `@technical-writer` creates documentation
-12. CEO reviews and approves final deliverable
+3. **`@guardrail` validates PRD compliance with USER_INPUT.md (CHECKPOINT)**
+4. PM delegates to `@product-designer` for UX design
+5. Designer delegates to `@solution-architect` for system architecture
+6. **`@guardrail` validates architecture (CHECKPOINT)**
+7. Architect delegates to `@lead-engineer` for task breakdown
+8. Lead Engineer delegates to `@software-engineer` for implementation
+9. **`@guardrail` validates implementation scope (CHECKPOINT)**
+10. Software Engineer uses `webfetch` to research best practices
+11. `@qa-engineer` validates implementation with comprehensive tests
+12. `@security-engineer` performs security audit
+13. `@devops-sre` sets up deployment pipeline
+14. `@technical-writer` creates documentation
+15. **`@guardrail` performs final scope validation (CHECKPOINT)**
+16. CEO reviews and approves final deliverable
 
 **All delegation happens automatically** - you just watch the stream!
 

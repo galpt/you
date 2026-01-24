@@ -45,8 +45,10 @@ The OpenCode TUI is **interactive by design** - it expects human input. This mea
 ┌─────────────────────────────────────────────────────────┐
 │  CEO Agent orchestrates entire team                     │
 │  - Delegates to @product-manager, @architect, etc.      │
+│  - Invokes @guardrail at checkpoints for validation     │
 │  - Uses webfetch for research                           │
 │  - Makes decisions based on best practices              │
+│  - Guardrail prevents scope creep and over-engineering  │
 │  - No human intervention required                       │
 └─────────────────────────────────────────────────────────┘
 ```
