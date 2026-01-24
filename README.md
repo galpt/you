@@ -375,7 +375,9 @@ you/
 
 | Agent | Role | Type | Responsibilities |
 |-------|------|------|------------------|
-| **CEO** | Orchestrator | Primary | High-level decision making, delegates to PM, final approval || **Guardrail** | Budget Enforcer | Subagent | **Prevents scope creep and over-engineering**, validates strict adherence to USER_INPUT.md, rejects unrequested features, protects company budget || **Product Manager** | Requirements | Subagent | Creates PRDs, user stories, acceptance criteria |
+| **CEO** | Orchestrator | Primary | High-level decision making, delegates to PM, final approval |
+| **Guardrail** | Budget Enforcer | Subagent | Prevents scope creep and over-engineering, validates strict adherence to USER_INPUT.md, rejects unrequested features, protects company budget |
+| **Product Manager** | Requirements | Subagent | Creates PRDs, user stories, acceptance criteria |
 | **Product Designer** | UI/UX | Subagent | User flows, design systems, component specifications |
 | **Solution Architect** | Architecture | Subagent | Tech stack, data models, API design, system architecture |
 | **Lead Engineer** | Task Management | Subagent | Breaks architecture into tasks, code review, releases |
