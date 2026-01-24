@@ -169,6 +169,12 @@ The orchestration runs **completely autonomously**:
 
 **All delegation happens automatically** - you just watch the stream!
 
+**Resilience Features (v0.1.10+):**
+- Automatic retry with exponential backoff on rate limits (429 errors)
+- Up to 5 retry attempts with backoff from 2s to 2 minutes
+- Activity monitoring warns if stuck for 10+ minutes
+- Detailed error logging for diagnostics
+
 ## Monitoring Progress
 
 All artifacts are saved in `.you/`:

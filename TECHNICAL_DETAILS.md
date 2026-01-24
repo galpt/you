@@ -38,6 +38,8 @@ The OpenCode TUI is **interactive by design** - it expects human input. This mea
 │  - No TUI → No waiting for human input                  │
 │  - Async messages → Agents run autonomously             │
 │  - Event stream → Real-time visibility                  │
+│  - Rate limit handling → Automatic retry with backoff   │
+│  - Activity monitoring → Stuck detection after 10min    │
 └─────────────────────────────────────────────────────────┘
           ↓
 ┌─────────────────────────────────────────────────────────┐

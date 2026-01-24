@@ -32,7 +32,7 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 
 ## Status
 
-**Current Version**: 0.1.9
+**Current Version**: 0.1.10
 
 This is an early beta release. The orchestrator can:
 - ✅ Generate OpenCode agent configurations
@@ -472,9 +472,9 @@ Agents follow a "never stop until complete" protocol:
 
 ### Current Limitations
 - One orchestration at a time (single OpenCode server instance)
-- No automatic retry on OpenCode rate limits
 - Terminal-only interface (no web UI)
 - Fixed port 4096 for OpenCode server
+- Long-running orchestrations may encounter rate limits (automatic retry with exponential backoff up to 5 attempts)
 
 ---
 

@@ -22,6 +22,13 @@ import (
 	"github.com/google/uuid"
 )
 
+const (
+	maxRetries         = 5
+	initialBackoff     = 2 * time.Second
+	maxBackoff         = 2 * time.Minute
+	streamReadTimeout  = 10 * time.Minute
+)
+
 // Orchestrator manages the workflow of AI agents
 type Orchestrator struct {
 	scr         *state.SCR
@@ -612,35 +619,69 @@ func (o *Orchestrator) orchestrateViaAPI(baseURL string) error {
 	return nil
 }
 
-// createSession creates a new OpenCode session via HTTP API
+// createSession creates a new OpenCode session via HTTP API with retry logic
 func (o *Orchestrator) createSession(client *http.Client, baseURL string) (string, error) {
 	reqBody := map[string]interface{}{
 		"title": "You Orchestrator - Autonomous Build",
 	}
 
 	jsonBody, _ := json.Marshal(reqBody)
-	resp, err := client.Post(baseURL+"/session", "application/json", bytes.NewBuffer(jsonBody))
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
+	
+	var lastErr error
+	backoff := initialBackoff
+	
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		if attempt > 0 {
+			fmt.Printf("⏳ Retrying session creation (attempt %d/%d) after %v...\n", attempt+1, maxRetries, backoff)
+			time.Sleep(backoff)
+			if backoff*2 < maxBackoff {
+				backoff = backoff * 2
+			} else {
+				backoff = maxBackoff
+			}
+		}
+		
+		resp, err := client.Post(baseURL+"/session", "application/json", bytes.NewBuffer(jsonBody))
+		if err != nil {
+			lastErr = err
+			fmt.Printf("⚠️  Connection error: %v\n", err)
+			continue
+		}
+		defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return "", fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+		
+		// Handle rate limiting (429) and server errors (5xx)
+		if resp.StatusCode == http.StatusTooManyRequests {
+			lastErr = fmt.Errorf("rate limited")
+			fmt.Printf("⚠️  Rate limited (429) - backing off...\n")
+			continue
+		}
+		
+		if resp.StatusCode >= 500 {
+			lastErr = fmt.Errorf("server error HTTP %d: %s", resp.StatusCode, string(body))
+			fmt.Printf("⚠️  Server error (%d) - retrying...\n", resp.StatusCode)
+			continue
+		}
+		
+		if resp.StatusCode != http.StatusOK {
+			return "", fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+		}
+
+		var session struct {
+			ID string `json:"id"`
+		}
+		if err := json.Unmarshal(body, &session); err != nil {
+			return "", err
+		}
+
+		return session.ID, nil
 	}
 
-	var session struct {
-		ID string `json:"id"`
-	}
-	if err := json.NewDecoder(resp.Body).Decode(&session); err != nil {
-		return "", err
-	}
-
-	return session.ID, nil
+	return "", fmt.Errorf("failed after %d attempts: %w", maxRetries, lastErr)
 }
 
-// sendPromptAsync sends a message to the session
+// sendPromptAsync sends a message to the session with retry logic
 // OpenCode routes messages to primary agents automatically
 func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, message string) error {
 	// Generate IDs with proper prefixes (OpenCode requirement)
@@ -652,7 +693,7 @@ func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, 
 	reqBody := map[string]interface{}{
 		"messageID":  messageID,
 		"providerID": "github-copilot",
-		"modelID":    "github-copilot/gpt-5-mini", // Fixed typo: was githhub
+		"modelID":    "github-copilot/gpt-5-mini",
 		"mode":       "build",
 		"parts": []map[string]interface{}{
 			{
@@ -666,22 +707,53 @@ func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, 
 	}
 
 	jsonBody, _ := json.Marshal(reqBody)
-	// Correct endpoint: /session/{id}/message NOT /prompt_async
 	url := fmt.Sprintf("%s/session/%s/message", baseURL, sessionID)
 
-	resp, err := client.Post(url, "application/json", bytes.NewBuffer(jsonBody))
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+	var lastErr error
+	backoff := initialBackoff
+	
+	for attempt := 0; attempt < maxRetries; attempt++ {
+		if attempt > 0 {
+			fmt.Printf("⏳ Retrying message send (attempt %d/%d) after %v...\n", attempt+1, maxRetries, backoff)
+			time.Sleep(backoff)
+			if backoff*2 < maxBackoff {
+				backoff = backoff * 2
+			} else {
+				backoff = maxBackoff
+			}
+		}
+		
+		resp, err := client.Post(url, "application/json", bytes.NewBuffer(jsonBody))
+		if err != nil {
+			lastErr = err
+			fmt.Printf("⚠️  Connection error: %v\n", err)
+			continue
+		}
+		defer resp.Body.Close()
 
-	// OpenCode /message returns 200 with the message response, not 204
-	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+		
+		// Handle rate limiting and server errors
+		if resp.StatusCode == http.StatusTooManyRequests {
+			lastErr = fmt.Errorf("rate limited")
+			fmt.Printf("⚠️  Rate limited (429) - backing off...\n")
+			continue
+		}
+		
+		if resp.StatusCode >= 500 {
+			lastErr = fmt.Errorf("server error HTTP %d: %s", resp.StatusCode, string(body))
+			fmt.Printf("⚠️  Server error (%d) - retrying...\n", resp.StatusCode)
+			continue
+		}
+		
+		if resp.StatusCode != http.StatusOK {
+			return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+		}
+
+		return nil
 	}
 
-	return nil
+	return fmt.Errorf("failed after %d attempts: %w", maxRetries, lastErr)
 }
 
 // streamEvents connects to the SSE event stream and displays events in real-time
@@ -691,11 +763,16 @@ func (o *Orchestrator) streamEvents(ctx context.Context, baseURL string) error {
 		return err
 	}
 	req.Header.Set("Accept", "text/event-stream")
+	req.Header.Set("Cache-Control", "no-cache")
+	req.Header.Set("Connection", "keep-alive")
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 0, // No timeout for SSE streams
+	}
+	
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to connect to event stream: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -710,11 +787,34 @@ func (o *Orchestrator) streamEvents(ctx context.Context, baseURL string) error {
 	buffer := make([]byte, maxTokenSize)
 	scanner.Buffer(buffer, maxTokenSize)
 
+	lastActivity := time.Now()
+	activityTicker := time.NewTicker(30 * time.Second)
+	defer activityTicker.Stop()
+	
+	// Monitor for inactivity
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-activityTicker.C:
+				if time.Since(lastActivity) > streamReadTimeout {
+					fmt.Printf("\n⚠️  No activity for %v - stream may be stuck\n", streamReadTimeout)
+					fmt.Println("💡 This could be due to:")
+					fmt.Println("   - GitHub Copilot rate limiting")
+					fmt.Println("   - OpenCode server processing")
+					fmt.Println("   - Network connectivity issues")
+				}
+			}
+		}
+	}()
+
 	for scanner.Scan() {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
 		default:
+			lastActivity = time.Now()
 			line := scanner.Text()
 
 			// SSE format: "data: {json}"
@@ -726,17 +826,27 @@ func (o *Orchestrator) streamEvents(ctx context.Context, baseURL string) error {
 				if err := json.Unmarshal([]byte(eventData), &event); err == nil {
 					o.displayEvent(event)
 				} else {
-					// Fallback: just print the raw data
-					fmt.Println(eventData)
+					// Log parse errors for debugging
+					fmt.Printf("⚠️  Failed to parse event: %v\n", err)
+					fmt.Printf("   Raw data: %s\n", eventData[:min(len(eventData), 200)])
 				}
+			} else if line != "" && !strings.HasPrefix(line, ":") {
+				// Log unexpected non-comment lines
+				fmt.Printf("🔍 Unexpected SSE line: %s\n", line[:min(len(line), 100)])
 			}
 		}
 	}
 
 	if err := scanner.Err(); err != nil {
-		return err
+		fmt.Printf("⚠️  Scanner error: %v\n", err)
+		fmt.Println("💡 Possible causes:")
+		fmt.Println("   - Large event exceeded buffer (current: 10MB)")
+		fmt.Println("   - Network connection interrupted")
+		fmt.Println("   - OpenCode server restarted")
+		return fmt.Errorf("stream scanner error: %w", err)
 	}
 
+	fmt.Println("ℹ️  Event stream ended gracefully")
 	return nil
 }
 
@@ -1213,4 +1323,12 @@ Use this skill before any production deployment or major release.
 	}
 
 	return nil
+}
+
+// min returns the smaller of two integers (helper for Go < 1.21)
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

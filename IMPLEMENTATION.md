@@ -29,9 +29,11 @@
    - CLI command handlers (--presets, --orchestrate)
    - **HTTP API Integration** for autonomous orchestration:
      - Launches OpenCode server (`opencode serve --port 4096`)
-     - Creates HTTP sessions (`POST /session`)
-     - Sends messages to CEO agent (`POST /session/:id/message`) - fire-and-forget in goroutine
+     - Creates HTTP sessions (`POST /session`) with retry logic
+     - Sends messages to CEO agent (`POST /session/:id/message`) with retry logic
      - Streams real-time events (`GET /event` via Server-Sent Events)
+     - Intelligent rate limit handling with exponential backoff (2s → 2min max)
+     - Activity monitoring and diagnostic logging
    - Generates USER_INPUT.md template
    - Creates OpenCode agent definitions (.opencode/agents/*.md)
    - Creates OpenCode configuration (.opencode/opencode.json)
@@ -285,9 +287,11 @@ Agents communicate via OpenCode's `delegate` tool (Task tool):
    - Currently uses `time.Sleep(2s)` to wait for server
    - Future: Poll `/global/health` endpoint
 
-2. **Error Recovery**
-   - No automatic retry on OpenCode rate limits
-   - Future: Smart retry with exponential backoff
+2. **Error Recovery** ✅ **IMPLEMENTED in v0.1.10**
+   - ✅ Smart retry with exponential backoff (2s → 2min max)
+   - ✅ Handles rate limits (429) and server errors (5xx)
+   - ✅ Up to 5 retry attempts before failing
+   - ✅ Activity monitoring with 10-minute inactivity warnings
 
 3. **Event Filtering**
    - Shows all events
