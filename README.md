@@ -34,13 +34,14 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 
 **Current Version**: 0.1.13
 
-This is an early beta release. The orchestrator can:
-- ✅ Generate OpenCode agent configurations
-- ✅ Set up workflow templates and professional skills
-- ✅ Track artifacts and state in a Shared Certified Repository (SCR)
-- ✅ **Fully autonomous orchestration via HTTP API**
-- ✅ **Real-time event streaming** via Server-Sent Events
-- ✅ **Re-orchestration support** with session isolation
+> [!NOTE]
+> This is an early beta release. The orchestrator can:
+> - Generate OpenCode agent configurations
+> - Set up workflow templates and professional skills
+> - Track artifacts and state in a Shared Certified Repository (SCR)
+> - Fully autonomous orchestration via HTTP API
+> - Real-time event streaming via Server-Sent Events
+> - Re-orchestration support with session isolation
 
 ---
 
@@ -68,10 +69,10 @@ This is an early beta release. The orchestrator can:
 
 - **Go**: 1.21 or higher
 - **OpenCode**: Latest version ([install here](https://opencode.ai/docs/))
-- **GitHub Copilot Pro**: **Strongly recommended** for unlimited `gpt-5-mini` access
-  - ⚠️ **Critical**: GitHub Copilot uses a multiplier system - `gpt-5-mini` has **0x multiplier** (unlimited)
+- **GitHub Copilot Pro**: Strongly recommended for unlimited `gpt-5-mini` access
+  - GitHub Copilot uses a multiplier system - `gpt-5-mini` has **0x multiplier** (unlimited)
   - Our config uses `gpt-5-mini` exclusively: `10 agents × 0 multiplier = 0 premium requests`
-  - Refer to [GitMurf on OpenCode pricing](https://x.com/GitMurf/status/1879705548899336622)
+  - Refer to [GitMurf on OpenCode pricing for GitHub Copilot](https://x.com/GitMurf/status/2011923915086708827?s=20)
 - **Alternative**: Any OpenCode-supported LLM provider (Anthropic, OpenAI, etc.)
 
 ---
