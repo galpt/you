@@ -269,7 +269,7 @@ Agents communicate via OpenCode's `delegate` tool (Task tool):
 | Requirement | Status | Implementation |
 |-------------|--------|----------------|
 | Single-prompt orchestration | ✅ | USER_INPUT.md → HTTP API → Autonomous workflow |
-| Role-based agents | ✅ | 10 specialized agents with custom prompts |
+| Role-based agents | ✅ | 11 specialized agents with custom prompts |
 | State management (SCR) | ✅ | JSON-based persistence in .you/ |
 | Artifact tracking | ✅ | PRD, ARCH_DOC, CODE, TEST_REPORT, etc. |
 | OpenCode integration | ✅ | HTTP API + SSE streaming |
@@ -359,7 +359,7 @@ The You orchestrator is a **production-ready**, **modular**, and **extensible** 
 
 ### Key Achievements
 ✅ Clean, modular Go codebase
-✅ 10 specialized AI agents with autonomous prompts
+✅ 11 specialized AI agents with autonomous prompts
 ✅ Complete HTTP API integration with SSE streaming
 ✅ State management and artifact tracking
 ✅ Re-orchestration support with session isolation

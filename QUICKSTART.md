@@ -49,7 +49,7 @@ you --presets
 
 This creates:
 - `USER_INPUT.md` - Your project requirements
-- `.opencode/agents/*.md` - 10 AI agent definitions
+- `.opencode/agents/*.md` - 11 AI agent definitions
 - `.opencode/opencode.json` - OpenCode configuration
 - `.opencode/skills/*/SKILL.md` - 5 professional skill definitions
 - `.you/` - State management directory

@@ -138,9 +138,11 @@ jobs:
           ### 🚀 What's Included
 
           - ✅ Cross-platform binaries (Windows, Linux, macOS Intel/ARM)
-          - ✅ 10 specialized AI agents with autonomous decision-making
+          - ✅ **11 specialized AI agents** with autonomous decision-making (CEO, Guardrail, PM, Designer, Architect, Lead, SWE, QA, Security, DevOps, Writer)
+          - ✅ **Budget Protection System** - Guardrail agent prevents scope creep and over-engineering
           - ✅ **HTTP API integration** for fully autonomous orchestration
           - ✅ **Real-time event streaming** via Server-Sent Events
+          - ✅ **Intelligent rate limit handling** with exponential backoff
           - ✅ Professional skills for software engineering workflows
           - ✅ Web research capabilities via `webfetch` tool
           - ✅ State management with session isolation
