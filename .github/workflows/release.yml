@@ -140,6 +140,7 @@ jobs:
           - ✅ Cross-platform binaries (Windows, Linux, macOS Intel/ARM)
           - ✅ **11 specialized AI agents** with autonomous decision-making (CEO, Guardrail, PM, Designer, Architect, Lead, SWE, QA, Security, DevOps, Writer)
           - ✅ **Budget Protection System** - Guardrail agent prevents scope creep and over-engineering
+          - ✅ **Loop Detection & Prevention** - CEO monitors and resolves infinite agent loops automatically
           - ✅ **HTTP API integration** for fully autonomous orchestration
           - ✅ **Real-time event streaming** via Server-Sent Events
           - ✅ **Intelligent rate limit handling** with exponential backoff

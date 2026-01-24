@@ -19,6 +19,8 @@
    - Agents: CEO, **Guardrail (Budget Enforcer)**, PM, Designer, Architect, Lead Engineer, SWE, QA, Security, DevOps, Tech Writer
    - Each agent has custom tools (write, edit, bash, webfetch, delegate, skill)
    - Guardrail agent has read-only access with veto power over scope creep
+   - **CEO monitors for infinite loops** and intervenes when agents exchange >3 messages without progress
+   - **Emergency guardrail invocation** when scope creep is suspected, regardless of checkpoint
    - Configured to make autonomous decisions without human intervention
 
 3. **State Management** (`internal/state/scr.go`)

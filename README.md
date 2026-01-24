@@ -52,6 +52,7 @@ This is an early beta release. The orchestrator can:
 - **Single-Prompt Orchestration**: Describe your project once; agents handle the rest
 - **11 Specialized Agents**: CEO, **Guardrail (Budget Enforcer)**, Product Manager, Designer, Architect, Lead Engineer, SWE, QA, Security, DevOps, Technical Writer
 - **Budget Protection System**: Guardrail agent prevents scope creep and over-engineering, ensures strict adherence to USER_INPUT.md requirements
+- **Loop Detection & Prevention**: CEO monitors for infinite agent loops and intervenes automatically to resolve deadlocks
 - **Professional Skills**: Reusable workflows for PRD creation, code review, security audits, API design, deployment checklists
 - **Web Research Capabilities**: All agents can browse the internet to verify documentation and latest syntax before writing code
 - **Smart Agent System**: Agents research best practices and make autonomous decisions based on industry standards

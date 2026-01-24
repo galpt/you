@@ -23,10 +23,10 @@ import (
 )
 
 const (
-	maxRetries         = 5
-	initialBackoff     = 2 * time.Second
-	maxBackoff         = 2 * time.Minute
-	streamReadTimeout  = 10 * time.Minute
+	maxRetries        = 5
+	initialBackoff    = 2 * time.Second
+	maxBackoff        = 2 * time.Minute
+	streamReadTimeout = 10 * time.Minute
 )
 
 // Orchestrator manages the workflow of AI agents
@@ -638,10 +638,10 @@ func (o *Orchestrator) createSession(client *http.Client, baseURL string) (strin
 	}
 
 	jsonBody, _ := json.Marshal(reqBody)
-	
+
 	var lastErr error
 	backoff := initialBackoff
-	
+
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		if attempt > 0 {
 			fmt.Printf("⏳ Retrying session creation (attempt %d/%d) after %v...\n", attempt+1, maxRetries, backoff)
@@ -652,7 +652,7 @@ func (o *Orchestrator) createSession(client *http.Client, baseURL string) (strin
 				backoff = maxBackoff
 			}
 		}
-		
+
 		resp, err := client.Post(baseURL+"/session", "application/json", bytes.NewBuffer(jsonBody))
 		if err != nil {
 			lastErr = err
@@ -662,20 +662,20 @@ func (o *Orchestrator) createSession(client *http.Client, baseURL string) (strin
 		defer resp.Body.Close()
 
 		body, _ := io.ReadAll(resp.Body)
-		
+
 		// Handle rate limiting (429) and server errors (5xx)
 		if resp.StatusCode == http.StatusTooManyRequests {
 			lastErr = fmt.Errorf("rate limited")
 			fmt.Printf("⚠️  Rate limited (429) - backing off...\n")
 			continue
 		}
-		
+
 		if resp.StatusCode >= 500 {
 			lastErr = fmt.Errorf("server error HTTP %d: %s", resp.StatusCode, string(body))
 			fmt.Printf("⚠️  Server error (%d) - retrying...\n", resp.StatusCode)
 			continue
 		}
-		
+
 		if resp.StatusCode != http.StatusOK {
 			return "", fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
 		}
@@ -723,7 +723,7 @@ func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, 
 
 	var lastErr error
 	backoff := initialBackoff
-	
+
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		if attempt > 0 {
 			fmt.Printf("⏳ Retrying message send (attempt %d/%d) after %v...\n", attempt+1, maxRetries, backoff)
@@ -734,7 +734,7 @@ func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, 
 				backoff = maxBackoff
 			}
 		}
-		
+
 		resp, err := client.Post(url, "application/json", bytes.NewBuffer(jsonBody))
 		if err != nil {
 			lastErr = err
@@ -744,20 +744,20 @@ func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, 
 		defer resp.Body.Close()
 
 		body, _ := io.ReadAll(resp.Body)
-		
+
 		// Handle rate limiting and server errors
 		if resp.StatusCode == http.StatusTooManyRequests {
 			lastErr = fmt.Errorf("rate limited")
 			fmt.Printf("⚠️  Rate limited (429) - backing off...\n")
 			continue
 		}
-		
+
 		if resp.StatusCode >= 500 {
 			lastErr = fmt.Errorf("server error HTTP %d: %s", resp.StatusCode, string(body))
 			fmt.Printf("⚠️  Server error (%d) - retrying...\n", resp.StatusCode)
 			continue
 		}
-		
+
 		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
 		}
@@ -781,7 +781,7 @@ func (o *Orchestrator) streamEvents(ctx context.Context, baseURL string) error {
 	client := &http.Client{
 		Timeout: 0, // No timeout for SSE streams
 	}
-	
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to connect to event stream: %w", err)
@@ -802,7 +802,7 @@ func (o *Orchestrator) streamEvents(ctx context.Context, baseURL string) error {
 	lastActivity := time.Now()
 	activityTicker := time.NewTicker(30 * time.Second)
 	defer activityTicker.Stop()
-	
+
 	// Monitor for inactivity
 	go func() {
 		for {
@@ -986,57 +986,86 @@ This guide explains how the You orchestrator coordinates AI agents to build your
 - **CEO** delegates to **@product-manager** to create a PRD
 - **Output**: Product Requirements Document (PRD)
 
-### 2. REQUIREMENTS (Product Manager → Product Designer)
-- **Product Manager** creates detailed PRD with user stories and acceptance criteria
-- **Product Manager** delegates to **@product-designer** for UX work
-- **Output**: PRD artifact saved to .you/artifacts/
+### 2. ✅ GUARDRAIL CHECKPOINT #1: PRD Validation
+- **CEO** invokes **@guardrail** to validate the PRD
+- **Guardrail** checks for scope creep, over-engineering, unrequested features
+- **Guardrail** compares PRD against USER_INPUT.md requirements
+- **Guardrail** either approves or **REJECTS** with specific violations
+- **If REJECTED**: PM must revise PRD and CEO re-validates
+- **If APPROVED**: Proceed to next phase
 
-### 3. DESIGN (Product Designer → Solution Architect)
+### 3. REQUIREMENTS (Product Manager → Product Designer)
+- **Product Manager** (after guardrail approval) delegates to **@product-designer** for UX work
 - **Product Designer** creates user flows and design specifications
-- **Product Designer** delegates to **@solution-architect** for technical design
-- **Output**: DESIGN_DOC artifact
+- **Output**: PRD artifact saved to .you/artifacts/, DESIGN_DOC artifact
 
-### 4. ARCHITECTURE (Solution Architect → Lead Engineer)
+### 4. DESIGN (Product Designer → Solution Architect)
+- **Product Designer** delegates to **@solution-architect** for technical design
 - **Solution Architect** designs system architecture, tech stack, data models
-- **Solution Architect** delegates to **@lead-engineer** to break down into tasks
 - **Output**: ARCH_DOC artifact
 
-### 5. PLANNING (Lead Engineer → Software Engineers)
+### 5. ✅ GUARDRAIL CHECKPOINT #2: Architecture Validation
+- **CEO** invokes **@guardrail** to validate the architecture
+- **Guardrail** checks for over-engineered solutions, unnecessary complexity
+- **Guardrail** verifies tech stack choices match USER_INPUT.md constraints
+- **Guardrail** either approves or **REJECTS** with specific violations
+- **If REJECTED**: Architect must simplify and CEO re-validates
+- **If APPROVED**: Proceed to planning
+
+### 6. PLANNING (Solution Architect → Lead Engineer)
+- **Solution Architect** (after guardrail approval) delegates to **@lead-engineer** to break down into tasks
 - **Lead Engineer** breaks architecture into concrete, actionable tasks
 - **Lead Engineer** assigns tasks to **@software-engineer** agents
 - **Output**: TASK_LIST artifact with 10-20 tasks
 
-### 6. IMPLEMENTATION (Software Engineers)
+### 7. IMPLEMENTATION (Software Engineers)
 - Multiple **Software Engineers** implement features in parallel
 - Each SWE writes code, tests, and submits for review
 - **Lead Engineer** reviews code quality
 - **Output**: CODE artifacts for each task
 
-### 7. SECURITY REVIEW (Security Engineer)
+### 8. ✅ GUARDRAIL CHECKPOINT #3: Implementation Validation
+- **CEO** invokes **@guardrail** to validate the implementation
+- **Guardrail** reviews code for scope creep, extra features, over-complexity
+- **Guardrail** ensures only USER_INPUT.md features were implemented
+- **Guardrail** either approves or **REJECTS** with specific violations
+- **If REJECTED**: Engineers must remove extra features and CEO re-validates
+- **If APPROVED**: Proceed to security and testing
+
+### 9. SECURITY REVIEW (Security Engineer)
 - **Security Engineer** audits code for vulnerabilities
 - **Security Engineer** reports any security issues
 - **Output**: Security audit report or BUG_REPORT artifacts
 
-### 8. TESTING (QA Engineer)
+### 10. TESTING (QA Engineer)
 - **QA Engineer** validates all PRD requirements
 - **QA Engineer** runs automated tests and manual validation
 - If bugs found, creates BUG_REPORT and sends back to SWE
 - **Output**: TEST_REPORT artifact
 
-### 9. DEPLOYMENT (DevOps/SRE)
+### 11. DEPLOYMENT (DevOps/SRE)
 - **DevOps** sets up CI/CD pipelines
 - **DevOps** configures infrastructure and deployment
 - **Output**: Deployment configurations, runbooks
 
-### 10. DOCUMENTATION (Technical Writer)
+### 12. DOCUMENTATION (Technical Writer)
 - **Technical Writer** creates README, API docs, user guides
 - **Technical Writer** updates CHANGELOG
 - **Output**: Complete documentation
 
-### 11. FINAL REVIEW (CEO)
-- **CEO** reviews all artifacts
+### 13. ✅ GUARDRAIL CHECKPOINT #4: Final Validation
+- **CEO** invokes **@guardrail** for final project review
+- **Guardrail** performs comprehensive scope verification
+- **Guardrail** ensures ZERO unrequested features shipped
+- **Guardrail** validates budget protection was maintained throughout
+- **Guardrail** either approves or **REJECTS** with specific violations
+- **If REJECTED**: Team must remove violations and CEO re-validates
+- **If APPROVED**: CEO proceeds to final approval
+
+### 14. FINAL REVIEW (CEO)
+- **CEO** reviews all artifacts (after guardrail final approval)
 - **CEO** validates against original user goal
-- **CEO** approves or requests changes
+- **CEO** approves project completion
 - **Output**: Final approval and project completion
 
 ## How to Use This
@@ -1053,10 +1082,98 @@ Follow the workflow phases to ensure all requirements are met.
 `+"```"+`
 
 The CEO will then automatically:
-1. Invoke @product-manager
-2. Monitor progress
-3. Ensure proper handoffs between agents
-4. Validate final output
+1. Invoke @product-manager to create PRD
+2. **Invoke @guardrail after PRD** to validate requirements
+3. Continue workflow with guardrail checkpoints at key phases
+4. **Monitor for infinite loops** and intervene if agents get stuck
+5. Ensure proper handoffs between agents
+6. Validate final output with guardrail approval
+
+## CEO Responsibilities - Loop Detection
+
+The **CEO must actively monitor** for these failure patterns:
+
+### 1. Infinite Agent Loops
+**Symptoms**: Same two agents exchanging messages >3 times without forward progress
+
+**Examples**:
+- PM ↔ Designer: Endless design iterations without moving to architecture
+- SWE ↔ QA: Bug fix loop without escalating to Lead Engineer
+- Designer ↔ Architect: Debating tech choices without resolution
+
+**CEO Action**:
+1. **Detect**: Count message exchanges between same two agents
+2. **Intervene**: After 3 iterations, step in and ask: "What's blocking progress?"
+3. **Diagnose**: Determine if loop is due to:
+   - Scope creep (feature keeps growing)
+   - Unclear requirements (USER_INPUT.md ambiguity)
+   - Technical disagreement (need architecture decision)
+4. **Invoke Guardrail**: If scope creep suspected, immediately invoke @guardrail to validate
+5. **Escalate**: If technical issue, make executive decision or simplify requirements
+
+### 2. Checkpoint Stalling
+**Symptoms**: Workflow stuck before reaching a guardrail checkpoint
+
+**Examples**:
+- PM revising PRD indefinitely without delegating to Designer
+- Architect stuck in analysis paralysis, never delegating to Lead Engineer
+
+**CEO Action**:
+1. **Set time limits**: Each phase should complete within reasonable time
+2. **Force checkpoint**: If PM taking >30 minutes, demand PRD draft and invoke guardrail
+3. **Simplify**: If stuck, likely over-engineering - invoke guardrail to reset scope
+
+### 3. Escalation Without CEO
+**Symptoms**: Agents making major decisions without CEO oversight
+
+**Examples**:
+- Architect changing tech stack without CEO approval
+- PM adding features not in USER_INPUT.md without CEO review
+
+**CEO Action**:
+1. **Require approval**: Major decisions (tech stack, new features) must go through CEO
+2. **Invoke guardrail**: Immediately validate any proposed changes against USER_INPUT.md
+3. **Veto if needed**: If violates budget/scope, reject and demand adherence to USER_INPUT.md
+
+## Guardrail Agent - Budget Protection
+
+The **@guardrail** agent acts as an uncompromising budget enforcer:
+
+### Role
+- Read-only access (cannot modify code or documents)
+- Veto power over proposals with scope creep
+- Validates strict adherence to USER_INPUT.md
+- Cannot be persuaded or negotiated with
+
+### When Guardrail is Invoked
+CEO invokes @guardrail in **two scenarios**:
+
+**A. Planned Checkpoints** (4 critical validation points):
+1. **After PRD Creation**: Validates requirements don't add unrequested features
+2. **After Architecture Design**: Prevents over-engineering and unnecessary complexity
+3. **After Implementation**: Ensures ONLY USER_INPUT.md features were built
+4. **Final Review**: Comprehensive scope verification before project approval
+
+**B. Emergency Intervention** (when loops or anomalies detected):
+1. **Infinite Loop Detected**: When same agents exchange >3 messages without progress
+2. **Scope Expansion Suspected**: When new features/complexity appear without USER_INPUT.md justification
+3. **Tech Stack Changes**: When Architect proposes technologies not in USER_INPUT.md constraints
+4. **Timeline Violations**: When any phase exceeds reasonable time without CEO approval
+
+**CEO must invoke guardrail immediately if scope creep is suspected, regardless of checkpoint.**
+
+### Guardrail Response Format
+- ✅ APPROVED: Proposal adheres to USER_INPUT.md, proceed to next phase
+- ❌ REJECTED: Specific violations with USER_INPUT.md quotes
+
+### Example Rejection
+When guardrail detects scope creep, it responds with:
+- VIOLATION: Specific feature that wasn't requested
+- USER_INPUT.md REQUIREMENT: What was actually requested
+- EVIDENCE: Direct quote from USER_INPUT.md
+- REQUIRED ACTION: Specific changes needed
+
+**Note**: If guardrail rejects, the team MUST revise and CEO re-validates before proceeding.
 
 ## Monitoring Progress
 
@@ -1069,13 +1186,16 @@ All artifacts and state are tracked in the .you/ directory:
 ## Agent Communication
 
 Agents communicate using the **Task tool** in OpenCode:
-- @ceo can invoke any agent
+- **@ceo** can invoke any agent (including @guardrail for validation)
+- **@guardrail** has read-only access, invoked by CEO only for checkpoint validation
 - @product-manager can invoke @product-designer
 - @solution-architect can invoke @lead-engineer
 - @lead-engineer can invoke @software-engineer and @qa-engineer
 - And so on...
 
 Each agent has specific permissions defined in .opencode/opencode.json
+
+**Critical**: @guardrail is NOT in the normal delegation chain. CEO invokes it explicitly at checkpoints.
 
 ## Tips for Success
 
