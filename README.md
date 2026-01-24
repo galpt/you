@@ -32,7 +32,7 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 
 ## Status
 
-**Current Version**: 0.1.11
+**Current Version**: 0.1.13
 
 This is an early beta release. The orchestrator can:
 - ✅ Generate OpenCode agent configurations
@@ -47,6 +47,8 @@ This is an early beta release. The orchestrator can:
 ## Features
 
 - **Fully Autonomous Operation**: Zero human intervention required - agents make intelligent decisions automatically via HTTP API
+- **Workspace Organization** (v0.1.13): Agents respect user-specified project folders and keep workspace clean
+- **Graceful Completion Detection** (v0.1.12): CEO detects when work is done and outputs clear success message before ending session
 - **Anti-Scope-Creep Protocol**: CEO and PM agents actively reject unrequested features to prevent over-engineering and budget overruns
 - **Real-time Event Streaming**: Watch all agent activity, file changes, and decisions in real-time via Server-Sent Events
 - **Re-orchestration Support**: Edit requirements and re-run for fresh start with session isolation

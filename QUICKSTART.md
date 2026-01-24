@@ -169,7 +169,7 @@ The orchestration runs **completely autonomously**:
 
 **All delegation happens automatically** - you just watch the stream!
 
-**Resilience Features (v0.1.11+):**
+**Resilience Features (v0.1.13+):**
 - Automatic retry with exponential backoff on rate limits (429 errors)
 - Up to 5 retry attempts with backoff from 2s to 2 minutes
 - Activity monitoring warns if stuck for 10+ minutes
@@ -284,7 +284,7 @@ Agents are configured to be **self-sufficient** through:
 **Most likely cause:** Using an older version with incorrect agent modes (versions before 0.1.11).
 
 **Solution:** 
-- Re-run `you --presets` to regenerate agent configs (CEO must be primary in v0.1.11+)
+- Re-run `you --presets` to regenerate agent configs (CEO must be primary in v0.1.11+, completion detection added in v0.1.12)
 - Or manually edit `.opencode/opencode.json` and `.opencode/agents/ceo.md`:
   ```yaml
   mode: primary  # CEO must be primary

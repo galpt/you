@@ -206,6 +206,22 @@ jobs:
           - **Enforced**: Only build what user explicitly requested
           - **Result**: Prevents scope creep, saves time and budget
 
+          ### ✨ New in v0.1.13
+
+          - **Fixed**: Workspace organization - agents now respect project folder requirements (e.g., "test-project")
+          - **Enhanced**: CEO reads USER_INPUT.md for workspace requirements and enforces them
+          - **Enhanced**: PM, Architect, Lead Engineer, and SWE all enforce correct file paths
+          - **Enhanced**: No more stray files at root - clean, organized workspaces
+          - **Enhanced**: Completion message shows actual project folder and build commands
+
+          ### ✨ Previous (v0.1.12)
+
+          - **Fixed**: Infinite approval loops - agents now operate fully autonomously
+          - **Fixed**: Artifact creation - agents explicitly create files in .you/artifacts/
+          - **Fixed**: CEO completion detection - gracefully ends session when work is done
+          - **Enhanced**: All 10 agents have universal autonomous operation rules
+          - **Enhanced**: CEO outputs clear success message with deliverables summary
+
           ### 🔐 Verification
 
           Verify your download with SHA256 checksums in `SHA256SUMS.txt`

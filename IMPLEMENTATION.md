@@ -289,7 +289,7 @@ Agents communicate via OpenCode's `delegate` tool (Task tool):
    - Currently uses `time.Sleep(2s)` to wait for server
    - Future: Poll `/global/health` endpoint
 
-2. **Error Recovery** ✅ **IMPLEMENTED in v0.1.10**
+2. **Error Recovery** ✅ **IMPLEMENTED in v0.1.10, ENHANCED in v0.1.12****
    - ✅ Smart retry with exponential backoff (2s → 2min max)
    - ✅ Handles rate limits (429) and server errors (5xx)
    - ✅ Up to 5 retry attempts before failing
