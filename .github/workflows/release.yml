@@ -206,7 +206,7 @@ jobs:
           - **Enforced**: Only build what user explicitly requested
           - **Result**: Prevents scope creep, saves time and budget
 
-          ### ✨ New in v0.1.13
+          ### ✨ New in v0.1.14
 
           - **Fixed**: Workspace organization - agents now respect project folder requirements (e.g., "test-project")
           - **Enhanced**: CEO reads USER_INPUT.md for workspace requirements and enforces them

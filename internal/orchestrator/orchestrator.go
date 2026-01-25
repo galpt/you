@@ -23,10 +23,10 @@ import (
 )
 
 const (
-	maxRetries         = 5
-	initialBackoff     = 2 * time.Second
-	maxBackoff         = 2 * time.Minute
-	streamReadTimeout  = 10 * time.Minute
+	maxRetries        = 5
+	initialBackoff    = 2 * time.Second
+	maxBackoff        = 2 * time.Minute
+	streamReadTimeout = 10 * time.Minute
 )
 
 // Orchestrator manages the workflow of AI agents
@@ -171,9 +171,26 @@ func (o *Orchestrator) createOpenCodeConfig() error {
 	configPath := filepath.Join(o.projectPath, ".opencode", "opencode.json")
 
 	config := `{
-  "$schema": "https://opencode.ai/config.json",
-  "model": "github-copilot/gpt-5-mini",
-  "small_model": "github-copilot/gpt-5-mini",
+	"$schema": "https://opencode.ai/config.json",
+	"model": "github-copilot/gpt-5-mini",
+	"small_model": "github-copilot/gpt-5-mini",
+	"provider": {
+		"github-copilot": {
+			"models": {
+				"gpt-5-mini": {
+					"variants": {
+						"thinking": {
+							"reasoningEffort":  "xhigh",
+							"textVerbosity":    "low",
+						},
+						"fast": {
+							"disabled": true
+						}
+					}
+				}
+			}
+		}
+	},
   "agent": {
     "build": {
       "mode": "subagent",
@@ -626,10 +643,10 @@ func (o *Orchestrator) createSession(client *http.Client, baseURL string) (strin
 	}
 
 	jsonBody, _ := json.Marshal(reqBody)
-	
+
 	var lastErr error
 	backoff := initialBackoff
-	
+
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		if attempt > 0 {
 			fmt.Printf("⏳ Retrying session creation (attempt %d/%d) after %v...\n", attempt+1, maxRetries, backoff)
@@ -640,7 +657,7 @@ func (o *Orchestrator) createSession(client *http.Client, baseURL string) (strin
 				backoff = maxBackoff
 			}
 		}
-		
+
 		resp, err := client.Post(baseURL+"/session", "application/json", bytes.NewBuffer(jsonBody))
 		if err != nil {
 			lastErr = err
@@ -650,20 +667,20 @@ func (o *Orchestrator) createSession(client *http.Client, baseURL string) (strin
 		defer resp.Body.Close()
 
 		body, _ := io.ReadAll(resp.Body)
-		
+
 		// Handle rate limiting (429) and server errors (5xx)
 		if resp.StatusCode == http.StatusTooManyRequests {
 			lastErr = fmt.Errorf("rate limited")
 			fmt.Printf("⚠️  Rate limited (429) - backing off...\n")
 			continue
 		}
-		
+
 		if resp.StatusCode >= 500 {
 			lastErr = fmt.Errorf("server error HTTP %d: %s", resp.StatusCode, string(body))
 			fmt.Printf("⚠️  Server error (%d) - retrying...\n", resp.StatusCode)
 			continue
 		}
-		
+
 		if resp.StatusCode != http.StatusOK {
 			return "", fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
 		}
@@ -711,7 +728,7 @@ func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, 
 
 	var lastErr error
 	backoff := initialBackoff
-	
+
 	for attempt := 0; attempt < maxRetries; attempt++ {
 		if attempt > 0 {
 			fmt.Printf("⏳ Retrying message send (attempt %d/%d) after %v...\n", attempt+1, maxRetries, backoff)
@@ -722,7 +739,7 @@ func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, 
 				backoff = maxBackoff
 			}
 		}
-		
+
 		resp, err := client.Post(url, "application/json", bytes.NewBuffer(jsonBody))
 		if err != nil {
 			lastErr = err
@@ -732,20 +749,20 @@ func (o *Orchestrator) sendPromptAsync(client *http.Client, baseURL, sessionID, 
 		defer resp.Body.Close()
 
 		body, _ := io.ReadAll(resp.Body)
-		
+
 		// Handle rate limiting and server errors
 		if resp.StatusCode == http.StatusTooManyRequests {
 			lastErr = fmt.Errorf("rate limited")
 			fmt.Printf("⚠️  Rate limited (429) - backing off...\n")
 			continue
 		}
-		
+
 		if resp.StatusCode >= 500 {
 			lastErr = fmt.Errorf("server error HTTP %d: %s", resp.StatusCode, string(body))
 			fmt.Printf("⚠️  Server error (%d) - retrying...\n", resp.StatusCode)
 			continue
 		}
-		
+
 		if resp.StatusCode != http.StatusOK {
 			return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
 		}
@@ -769,7 +786,7 @@ func (o *Orchestrator) streamEvents(ctx context.Context, baseURL string) error {
 	client := &http.Client{
 		Timeout: 0, // No timeout for SSE streams
 	}
-	
+
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to connect to event stream: %w", err)
@@ -790,7 +807,7 @@ func (o *Orchestrator) streamEvents(ctx context.Context, baseURL string) error {
 	lastActivity := time.Now()
 	activityTicker := time.NewTicker(30 * time.Second)
 	defer activityTicker.Stop()
-	
+
 	// Monitor for inactivity
 	go func() {
 		for {

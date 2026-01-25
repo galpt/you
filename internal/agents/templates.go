@@ -1,6 +1,7 @@
 package agents
 
 import (
+	"encoding/json"
 	"fmt"
 	"you/internal/models"
 )
@@ -12,6 +13,8 @@ type AgentTemplate struct {
 	Description string
 	Mode        string // "primary" or "subagent"
 	Model       string
+	Variant     string                 // optional model variant (e.g. "thinking")
+	Options     map[string]interface{} // provider/model-specific options (reasoningEffort, etc.)
 	Temperature float64
 	Tools       map[string]bool
 	Permissions map[string]string
@@ -41,6 +44,7 @@ func getCEOAgentTemplate() AgentTemplate {
 		Description: "Orchestrates the entire workflow, delegates to PM and reviews final output",
 		Mode:        "primary",
 		Model:       "github-copilot/gpt-5-mini",
+
 		Temperature: 0.2,
 		Tools: map[string]bool{
 			"write":    true,
@@ -48,6 +52,7 @@ func getCEOAgentTemplate() AgentTemplate {
 			"bash":     true,
 			"webfetch": true,
 			"skill":    true,
+			"task":     true,
 		},
 		Permissions: map[string]string{
 			"task":     "allow",
@@ -65,6 +70,7 @@ func getPMAgentTemplate() AgentTemplate {
 		Description: "Defines requirements, creates PRDs, and validates acceptance criteria",
 		Mode:        "subagent",
 		Model:       "github-copilot/gpt-5-mini",
+
 		Temperature: 0.3,
 		Tools: map[string]bool{
 			"write":    true,
@@ -72,6 +78,7 @@ func getPMAgentTemplate() AgentTemplate {
 			"bash":     true,
 			"webfetch": true,
 			"skill":    true,
+			"task":     true,
 		},
 		Permissions: map[string]string{
 			"edit":     "allow",
@@ -89,6 +96,7 @@ func getDesignerAgentTemplate() AgentTemplate {
 		Description: "Creates UI/UX designs, user flows, and design specifications",
 		Mode:        "subagent",
 		Model:       "github-copilot/gpt-5-mini",
+
 		Temperature: 0.4,
 		Tools: map[string]bool{
 			"write":    true,
@@ -96,6 +104,7 @@ func getDesignerAgentTemplate() AgentTemplate {
 			"bash":     true,
 			"webfetch": true,
 			"skill":    true,
+			"task":     true,
 		},
 		Permissions: map[string]string{
 			"edit":     "allow",
@@ -113,6 +122,7 @@ func getArchitectAgentTemplate() AgentTemplate {
 		Description: "Designs system architecture, tech stack, and data models",
 		Mode:        "subagent",
 		Model:       "github-copilot/gpt-5-mini",
+
 		Temperature: 0.2,
 		Tools: map[string]bool{
 			"write":    true,
@@ -120,6 +130,7 @@ func getArchitectAgentTemplate() AgentTemplate {
 			"bash":     true,
 			"webfetch": true,
 			"skill":    true,
+			"task":     true,
 		},
 		Permissions: map[string]string{
 			"edit":     "allow",
@@ -137,6 +148,7 @@ func getLeadEngineerAgentTemplate() AgentTemplate {
 		Description: "Breaks architecture into tasks, reviews code, manages releases",
 		Mode:        "subagent",
 		Model:       "github-copilot/gpt-5-mini",
+
 		Temperature: 0.2,
 		Tools: map[string]bool{
 			"write":    true,
@@ -144,6 +156,7 @@ func getLeadEngineerAgentTemplate() AgentTemplate {
 			"bash":     true,
 			"webfetch": true,
 			"skill":    true,
+			"task":     true,
 		},
 		Permissions: map[string]string{
 			"edit":     "allow",
@@ -162,6 +175,7 @@ func getSWEAgentTemplate() AgentTemplate {
 		Description: "Implements features, writes tests, and submits code for review",
 		Mode:        "subagent",
 		Model:       "github-copilot/gpt-5-mini",
+
 		Temperature: 0.3,
 		Tools: map[string]bool{
 			"write":    true,
@@ -169,6 +183,7 @@ func getSWEAgentTemplate() AgentTemplate {
 			"bash":     true,
 			"webfetch": true,
 			"skill":    true,
+			"task":     true,
 		},
 		Permissions: map[string]string{
 			"edit":     "allow",
@@ -187,6 +202,7 @@ func getQAAgentTemplate() AgentTemplate {
 		Description: "Performs automated testing, validates requirements, reports bugs",
 		Mode:        "subagent",
 		Model:       "github-copilot/gpt-5-mini",
+
 		Temperature: 0.1,
 		Tools: map[string]bool{
 			"write":    true,
@@ -194,6 +210,7 @@ func getQAAgentTemplate() AgentTemplate {
 			"bash":     true,
 			"webfetch": true,
 			"skill":    true,
+			"task":     true,
 		},
 		Permissions: map[string]string{
 			"edit":     "allow",
@@ -212,6 +229,7 @@ func getSecurityAgentTemplate() AgentTemplate {
 		Description: "Conducts security audits, identifies vulnerabilities, ensures secure coding practices",
 		Mode:        "subagent",
 		Model:       "github-copilot/gpt-5-mini",
+
 		Temperature: 0.1,
 		Tools: map[string]bool{
 			"write":    true,
@@ -219,6 +237,7 @@ func getSecurityAgentTemplate() AgentTemplate {
 			"bash":     true,
 			"webfetch": true,
 			"skill":    true,
+			"task":     true,
 		},
 		Permissions: map[string]string{
 			"edit":     "allow",
@@ -237,6 +256,7 @@ func getDevOpsAgentTemplate() AgentTemplate {
 		Description: "Manages CI/CD pipelines, infrastructure, deployment, and observability",
 		Mode:        "subagent",
 		Model:       "github-copilot/gpt-5-mini",
+
 		Temperature: 0.2,
 		Tools: map[string]bool{
 			"write":    true,
@@ -244,6 +264,7 @@ func getDevOpsAgentTemplate() AgentTemplate {
 			"bash":     true,
 			"webfetch": true,
 			"skill":    true,
+			"task":     true,
 		},
 		Permissions: map[string]string{
 			"edit":     "allow",
@@ -262,6 +283,7 @@ func getTechnicalWriterAgentTemplate() AgentTemplate {
 		Description: "Creates documentation, API references, user guides, and changelogs",
 		Mode:        "subagent",
 		Model:       "github-copilot/gpt-5-mini",
+
 		Temperature: 0.3,
 		Tools: map[string]bool{
 			"write":    true,
@@ -269,6 +291,7 @@ func getTechnicalWriterAgentTemplate() AgentTemplate {
 			"bash":     true,
 			"webfetch": true,
 			"skill":    true,
+			"task":     true,
 		},
 		Permissions: map[string]string{
 			"edit":     "allow",
@@ -285,9 +308,22 @@ func (a *AgentTemplate) ToMarkdown() string {
 description: "%s"
 mode: %s
 model: %s
-temperature: %.1f
-tools:
-`, a.Description, a.Mode, a.Model, a.Temperature)
+`, a.Description, a.Mode, a.Model)
+
+	if a.Variant != "" {
+		md += fmt.Sprintf("variant: %s\n", a.Variant)
+	}
+
+	md += fmt.Sprintf("temperature: %.1f\n", a.Temperature)
+
+	if len(a.Options) > 0 {
+		for k, v := range a.Options {
+			jb, _ := json.Marshal(v)
+			md += fmt.Sprintf("%s: %s\n", k, string(jb))
+		}
+	}
+
+	md += "tools:\n"
 
 	for tool, enabled := range a.Tools {
 		md += fmt.Sprintf("  %s: %t\n", tool, enabled)
