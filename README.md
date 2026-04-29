@@ -39,8 +39,6 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 
 ## Status
 
-**Current Version**: 0.1.14
-
 > [!NOTE]
 > This is an early beta release. The orchestrator can:
 > - Generate OpenCode agent configurations
