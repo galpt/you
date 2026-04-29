@@ -6,18 +6,13 @@ This project aims to supercharge AI agents without burdening ***you*** as the us
 
 > [!IMPORTANT]
 > This repository is planned for archival. After careful consideration, I have decided to shift focus to a successor project. Key reasons:
->
 > 1. **Copilot billing changes**: this project depends on GitHub Copilot's `gpt-5-mini` model which currently offers unlimited usage through a 0× multiplier. As announced in [this post](https://github.com/orgs/community/discussions/192948), GitHub Copilot is transitioning to a usage-based billing model effective June 1, eliminating the unlimited access this [You](https://github.com/galpt/you) project relied on.
->
 > 2. **A more sustainable alternative**: I created [kilocode-agents](https://github.com/galpt/kilocode-agents) to achieve the same goal — powerful subagent orchestration for medium-to-hard complexity projects — without reinventing the wheel. The Kilo team has been highly responsive, making [kilocode-agents](https://github.com/galpt/kilocode-agents) significantly easier to maintain and evolve.
->
 > 3. **Broader provider support**: [kilocode-agents](https://github.com/galpt/kilocode-agents) works with more AI providers, including [OpenCode Go](https://opencode.ai/go), giving you flexibility beyond what a single Copilot-dependent project can offer.
->
 > You are welcome to use this project as a reference for building your own orchestration harness. However, I recommend giving [kilocode-agents](https://github.com/galpt/kilocode-agents) a try — once you experience the workflow, you will likely agree that this project has been superseded.
 
 ---
 
-## Table of Contents
 ## Table of Contents
 - [Status](#status)
 - [Features](#features)
